@@ -1,3 +1,8 @@
 # TDT4295
 
-Example is just for testing purposes, can be deleted later. Using Unity for testing. 
+
+
+## How to test:
+We use Unity to test. In the directory test/vendor/, do:
+
+``` git clone https://github.com/ThrowTheSwitch/Unity.git ```
