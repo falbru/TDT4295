@@ -18,5 +18,5 @@ jobs:
 
     - name: Run clang-format
       run: |
-        find . -regex ".*\.\(c\|h\)$" -exec clang-format -i {} \;
+        find . -regex ".*\.\(c\|h\)$" -exec clang-format --style=Microsoft -i {} \;
         git diff --exit-code
