@@ -1,11 +1,9 @@
-#ifndef text_h_INCLUDED
-#define text_h_INCLUDED
+#ifndef TEXT_H_INCLUDED
+#define TEXT_H_INCLUDED
 
-typedef struct {
-  float x;
-  float y;
-} Point;
+#include "framebuffer.h"
+#include <stdint.h>
 
-Point *getHelloWorld();
+void renderText(const char *text, uint8_t color, int x, int y, Framebuffer *framebuffer);
 
-#endif // text_h_INCLUDED
+#endif
