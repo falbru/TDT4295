@@ -2,10 +2,10 @@
 #define text_h_INCLUDED
 
 typedef struct {
-    float x;
-    float y;
+  float x;
+  float y;
 } Point;
 
-Point* getHelloWorld();
+Point *getHelloWorld();
 
 #endif // text_h_INCLUDED
