@@ -1,0 +1,22 @@
+name: Format Check
+
+on: [push]
+
+jobs:
+  format:
+    name: Check code formatting with clang-format
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install clang-format
+      run: |
+        sudo apt-get update -q && sudo apt-get install -y clang-format
+        clang-format --version
+
+    - name: Run clang-format
+      run: |
+        find . -regex ".*\.\(c\|h\)$" -exec clang-format -i {} \;
+        git diff --exit-code
