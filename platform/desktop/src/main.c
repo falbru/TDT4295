@@ -1,101 +1,81 @@
-/* points.c ... */
-
-/*
- * This example creates an SDL window and renderer, and then draws some points
- * to it every frame.
- *
- * This code is public domain. Feel free to use it for any purpose!
- */
-
-#include <text.h>
-
 #include <SDL3/SDL_rect.h>
-#define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
 #include <stdlib.h>
 
-/* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
 #define WINDOW_WIDTH 480
 #define WINDOW_HEIGHT 272
 
-#define NUM_POINTS 512
-#define MIN_PIXELS_PER_SECOND 30  /* move at least this many pixels per second. */
-#define MAX_PIXELS_PER_SECOND 60  /* move this many pixels per second at most. */
+#include "framebuffer.h"
+#include "image.h"
+#include "text.h"
 
-/* (track everything as parallel arrays instead of a array of structs,
-   so we can pass the coordinates to the renderer in a single function call.) */
+Framebuffer framebuffer;
 
-/* Points are plotted as a set of X and Y coordinates.
-   (0, 0) is the top left of the window, and larger numbers go down
-   and to the right. This isn't how geometry works, but this is pretty
-   standard in 2D graphics. */
-static SDL_FPoint* points;
-static float point_speeds[NUM_POINTS];
+#define FRAMEBUFFER_SIZE WINDOW_WIDTH *WINDOW_HEIGHT
 
-SDL_FPoint* toSDLPoints(Point* points, int length) {
-    SDL_FPoint* sdlPoints = malloc(length * sizeof(SDL_FPoint));
-    for (int i = 0; i < length; i++) {
-        sdlPoints[i].x = points[i].x;
-        sdlPoints[i].y = points[i].y;
-    }
-    return sdlPoints;
-}
-
-/* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-    int i;
+    SDL_SetAppMetadata("GUI Library Example", "1.0", "com.example.renderer-points");
 
-    SDL_SetAppMetadata("Example Renderer Points", "1.0", "com.example.renderer-points");
-
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO))
+    {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("examples/renderer/points", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("GUI Demo", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer))
+    {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    points = toSDLPoints(getHelloWorld(), 101);
+    uint8_t *pixels = malloc(sizeof(uint8_t) * FRAMEBUFFER_SIZE);
+    for (int i = 0; i < FRAMEBUFFER_SIZE; i++)
+    {
+        pixels[i] = 0;
+    }
+    framebuffer = (Framebuffer){pixels, WINDOW_WIDTH, WINDOW_HEIGHT};
 
-    return SDL_APP_CONTINUE;  /* carry on with the program! */
+    renderText("TDT4295 is fun!", 255, 0, 0, &framebuffer);
+    renderImage(0, 100, &framebuffer);
+
+    return SDL_APP_CONTINUE;
 }
 
-/* This function runs when a new event (mouse input, keypresses, etc) occurs. */
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
-    if (event->type == SDL_EVENT_QUIT) {
-        return SDL_APP_SUCCESS;  /* end the program, reporting success to the OS. */
+    if (event->type == SDL_EVENT_QUIT)
+    {
+        return SDL_APP_SUCCESS;
     }
-    return SDL_APP_CONTINUE;  /* carry on with the program! */
+    return SDL_APP_CONTINUE;
 }
 
-/* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    /* as you can see from this, rendering draws over whatever was drawn before it. */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);  /* black, full alpha */
-    SDL_RenderClear(renderer);  /* start with a blank canvas. */
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);  /* white, full alpha */
-    SDL_RenderPoints(renderer, points, 101);  /* draw all the points! */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(renderer);
 
-    /* You can also draw single points with SDL_RenderPoint(), but it's
-       cheaper (sometimes significantly so) to do them all at once. */
+    for (int y = 0; y < WINDOW_HEIGHT; y++)
+    {
+        for (int x = 0; x < WINDOW_WIDTH; x++)
+        {
+            uint8_t pixel = framebuffer.pixels[y * WINDOW_WIDTH + x];
+            SDL_SetRenderDrawColor(renderer, pixel, pixel, pixel, SDL_ALPHA_OPAQUE);
+            SDL_RenderPoint(renderer, x, y);
+        }
+    }
+    SDL_RenderPresent(renderer);
 
-    SDL_RenderPresent(renderer);  /* put it all on the screen! */
-
-    return SDL_APP_CONTINUE;  /* carry on with the program! */
+    return SDL_APP_CONTINUE;
 }
 
-/* This function runs once at shutdown. */
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-    /* SDL will clean up the window/renderer for us. */
 }

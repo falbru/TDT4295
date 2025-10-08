@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-float multiply_win(float a, float b){
+float multiply_win(float a, float b)
+{
     return a * b;
 }
 
-char* return_c() {
+char *return_c()
+{
     return "hei!";
 }
