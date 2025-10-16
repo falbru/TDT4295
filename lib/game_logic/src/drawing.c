@@ -110,10 +110,6 @@ void drawBrushStroke(int x, int y, Canvas *brushstroke, Canvas *canvas) {
             
         }
     }
-
-    //calculate FPGA for correct changed pixels.
-
-
 }
 
 void calculateFPGAData(int fpga_x, int fpga_y, Canvas *canvas, FPGAData *fpga_data) {
