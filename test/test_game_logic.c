@@ -55,6 +55,8 @@ void test_drawPixel_adds_value_and_clamps_at_255(void)
 
 void test_drawPixel_does_not_write_out_of_bounds(void)
 {
+    // reset
+    initCanvas(&canvas, &fpga, canvas_buffer, fpga_buffer);
     // Writing outside should not crash or modify memory
     drawPixel(-1, 0, 100, &canvas);
     drawPixel(0, -1, 100, &canvas);
@@ -62,7 +64,9 @@ void test_drawPixel_does_not_write_out_of_bounds(void)
     drawPixel(0, CANVAS_MAX_HEIGHT, 100, &canvas);
     // Should still all be zero
     for (int i = 0; i < canvas.width * canvas.height; i++) {
-        TEST_ASSERT_EQUAL_UINT8(0, canvas.pixels[i]);
+            char msg[64];
+            snprintf(msg, sizeof(msg), "Pixel index %d failed (value=%u)", i, canvas.pixels[i]);
+            TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, canvas.pixels[i], msg);
     }
 }
 

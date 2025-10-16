@@ -33,7 +33,7 @@ void initCanvas(Canvas *canvas, FPGAData *fpga_data, uint8_t *canvas_buffer, boo
 void cleanCanvas(Canvas *canvas, FPGAData *fpga_data) {
     // reset sizes
     canvas->width = canvas->height = 0;
-    fpga_data->pixels = NULL;
+    canvas->pixels = NULL;
     fpga_data->width = fpga_data->height = 0;
     fpga_data->pixels = NULL;
 }
@@ -84,7 +84,7 @@ void cleanBrushstroke(Canvas *brushstroke) {
 }
 
 void drawPixel(int x, int y, uint8_t shade, Canvas *canvas) {
-    if (x < 0 || x > canvas->width || y < 0 || y > canvas->height) 
+    if (x < 0 || x >= canvas->width || y < 0 || y >= canvas->height) 
         return;
     
     int index = canvas->width * y + x;
@@ -130,49 +130,4 @@ void calculateFPGAData(int fpga_x, int fpga_y, Canvas *canvas, FPGAData *fpga_da
             }
         }
     }
-}
-
-int main(void) { //remove in actual program
-    Canvas canvas;
-    FPGAData fpga;
-    Canvas brushstroke;
-
-    initCanvas(&canvas, &fpga, canvas_buffer, fpga_buffer);
-    initBrushstroke(BRUSHSTROKE_HEIGHT, BRUSHSTROKE_WIDTH, &brushstroke);
-
-    printf("Canvas initialized: %dx%d\n", canvas.width, canvas.height);
-    printf("FPGA data: %dx%d\n", fpga.width, fpga.height);
-
-    // Make a small test brushstroke
-
-    // Draw the brushstroke in the middle of the canvas
-    drawBrushStroke(126, 126, &brushstroke, &canvas);
-
-    // Simulate calculating FPGA data
-    calculateFPGAData(14, 14, &canvas, &fpga);
-
-    // Print one example pixel to confirm
-    printf("Center pixel intensity: %u\n", canvas.pixels[126 * canvas.width + 126]);
-    printf("FPGA[14,14] = %d\n", fpga.pixels[14 * fpga.width + 14]);
-
-        // Draw the brushstroke in the middle of the canvas
-    drawBrushStroke(126, 126, &brushstroke, &canvas);
-
-    // Simulate calculating FPGA data
-    calculateFPGAData(14, 14, &canvas, &fpga);
-
-    // Print one example pixel to confirm
-    printf("Center pixel intensity: %u\n", canvas.pixels[126 * canvas.width + 126]);
-    printf("FPGA[14,14] = %d\n", fpga.pixels[14 * fpga.width + 14]);
-
-            // Draw the brushstroke in the middle of the canvas
-    drawBrushStroke(1, 1, &brushstroke, &canvas);
-
-    // Print one example pixel to confirm
-    printf("Center pixel intensity: %u\n", canvas.pixels[1 * canvas.width + 1]);
-
-    cleanCanvas(&canvas, &fpga);
-    cleanBrushstroke(&brushstroke);
-    printf("Canvas cleaned.\n");
-    return 0;
 }

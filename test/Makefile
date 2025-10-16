@@ -1,20 +1,21 @@
-CC = gcc
-CFLAGS = -O3 -Wall
+# Compiler and flags
+CC := gcc
+CFLAGS := -Wall -Wextra -g -I../lib/game_logic/include
 
-UNITY = vendor/Unity/src/unity.c
-TEST = test_game_logic.c
-LOGIC_SRC = ../lib/game_logic/src/*.c  # include all game logic source files
-OUT = test_game_logic
+# Source files
+SRC := ../lib/game_logic/src/drawing.c ./vendor/Unity/src/unity.c test_game_logic.c
+OUT := test_game_logic
 
-.PHONY: all clean test_run
+# Default target
+.PHONY: build run clean test
 
-all: $(OUT)
+build:
+	$(CC) $(CFLAGS) $(SRC) -o $(OUT)
 
-$(OUT): $(TEST) $(UNITY) $(LOGIC_SRC)
-	$(CC) $(CFLAGS) $(TEST) $(UNITY) $(LOGIC_SRC) -o $(OUT)
-
-test_run: $(OUT)
+run:
 	./$(OUT)
 
 clean:
 	rm -f $(OUT)
+
+test: clean build run
