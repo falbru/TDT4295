@@ -2,45 +2,32 @@
 #include <string.h>   // for memset
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h> //TODO: remove later
+#include <stdio.h> //TODO: remove in actual program
 #include "drawing.h"
 #include "brushstroke.h"
-
-//Example values
-/*
-const int CANVAS_HEIGHT = 252;
-const int CANVAS_WIDTH = 252;
-
-const int FPGA_DATA_HEIGHT = 28;
-const int FPGA_DATA_WIDTH = 28;
-
-const int KERNEL_HEIGHT = 9;
-const int KERNEL_WIDTH = 9;
-
-const int FPGA_DATA_THRESHOLD = 324; // 9*9*8/2 = 324
-*/
 
 #define CANVAS_MAX_WIDTH  252
 #define CANVAS_MAX_HEIGHT 252
 #define FPGA_MAX_WIDTH    28
 #define FPGA_MAX_HEIGHT   28
 #define KERNEL_WIDTH      9
-#define KERNEL_HEIGHT      9
+#define KERNEL_HEIGHT     9
 #define FPGA_DATA_THRESHOLD 324
 
-static uint8_t canvas_buffer[CANVAS_MAX_WIDTH * CANVAS_MAX_HEIGHT]; //TODO: REMOVEEE ON ACTUAL PEODUCT
-static bool fpga_buffer[FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT]; //TODO: REMOVEVE
+static uint8_t canvas_buffer[CANVAS_MAX_WIDTH * CANVAS_MAX_HEIGHT]; //TODO: Remove in actual product
+static bool fpga_buffer[FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT]; //TODO: Remove in actual product
 
-void initCanvas(Canvas *canvas, FPGAData *fpga_data) {
+void initCanvas(Canvas *canvas, FPGAData *fpga_data, uint8_t *canvas_buffer, bool *fpga_buffer) {
     canvas->width = CANVAS_MAX_WIDTH;
     canvas->height = CANVAS_MAX_HEIGHT;
     canvas->pixels = canvas_buffer;
-    memset(canvas_buffer, 0, sizeof(canvas_buffer));
+    memset(canvas_buffer, 0, CANVAS_MAX_WIDTH * CANVAS_MAX_HEIGHT * sizeof(uint8_t));
+
 
     fpga_data->width = FPGA_MAX_WIDTH;
     fpga_data->height = FPGA_MAX_HEIGHT;
     fpga_data->pixels = fpga_buffer;
-    memset(fpga_buffer, 0, sizeof(fpga_buffer));
+    memset(fpga_buffer, 0, FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT * sizeof(bool));
 }
 
 void cleanCanvas(Canvas *canvas, FPGAData *fpga_data) {
@@ -88,7 +75,7 @@ void cleanCanvas(Canvas *canvas, FPGAData *fpga_data) {
 void initBrushstroke(int brushstroke_height, int brushstroke_width, Canvas *brushstroke) {
     brushstroke->height = brushstroke_height;
     brushstroke->width = brushstroke_width;
-    brushstroke->pixels = brushstroke_diamond;
+    brushstroke->pixels = brushstroke_data;
 }
 
 void cleanBrushstroke(Canvas *brushstroke) {
@@ -145,12 +132,12 @@ void calculateFPGAData(int fpga_x, int fpga_y, Canvas *canvas, FPGAData *fpga_da
     }
 }
 
-int main(void) {
+int main(void) { //remove in actual program
     Canvas canvas;
     FPGAData fpga;
     Canvas brushstroke;
 
-    initCanvas(&canvas, &fpga);
+    initCanvas(&canvas, &fpga, canvas_buffer, fpga_buffer);
     initBrushstroke(BRUSHSTROKE_HEIGHT, BRUSHSTROKE_WIDTH, &brushstroke);
 
     printf("Canvas initialized: %dx%d\n", canvas.width, canvas.height);
