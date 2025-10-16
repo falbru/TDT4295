@@ -1,18 +1,20 @@
 #ifndef DRAWING_H_INCLUDED
 #define DRAWING_H_INCLUDED
 
-#include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-typedef struct {
+typedef struct
+{
     int width;
     int height;
     uint8_t *pixels;
 } Canvas;
 
-typedef struct {
+typedef struct
+{
     int width;
     int height;
     bool *pixels;

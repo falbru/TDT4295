@@ -1,28 +1,28 @@
-#include <stdlib.h>   // for malloc, free
-#include <string.h>   // for memset
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h> //TODO: remove in actual program
 #include "drawing.h"
 #include "brushstroke.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>  //TODO: remove in actual program
+#include <stdlib.h> // for malloc, free
+#include <string.h> // for memset
 
-#define CANVAS_MAX_WIDTH  252
+#define CANVAS_MAX_WIDTH 252
 #define CANVAS_MAX_HEIGHT 252
-#define FPGA_MAX_WIDTH    28
-#define FPGA_MAX_HEIGHT   28
-#define KERNEL_WIDTH      9
-#define KERNEL_HEIGHT     9
+#define FPGA_MAX_WIDTH 28
+#define FPGA_MAX_HEIGHT 28
+#define KERNEL_WIDTH 9
+#define KERNEL_HEIGHT 9
 #define FPGA_DATA_THRESHOLD 324
 
-static uint8_t canvas_buffer[CANVAS_MAX_WIDTH * CANVAS_MAX_HEIGHT]; //TODO: Remove in actual product
-static bool fpga_buffer[FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT]; //TODO: Remove in actual product
+static uint8_t canvas_buffer[CANVAS_MAX_WIDTH * CANVAS_MAX_HEIGHT]; // TODO: Remove in actual product
+static bool fpga_buffer[FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT];          // TODO: Remove in actual product
 
-void initCanvas(Canvas *canvas, FPGAData *fpga_data, uint8_t *canvas_buffer, bool *fpga_buffer) {
+void initCanvas(Canvas *canvas, FPGAData *fpga_data, uint8_t *canvas_buffer, bool *fpga_buffer)
+{
     canvas->width = CANVAS_MAX_WIDTH;
     canvas->height = CANVAS_MAX_HEIGHT;
     canvas->pixels = canvas_buffer;
     memset(canvas_buffer, 0, CANVAS_MAX_WIDTH * CANVAS_MAX_HEIGHT * sizeof(uint8_t));
-
 
     fpga_data->width = FPGA_MAX_WIDTH;
     fpga_data->height = FPGA_MAX_HEIGHT;
@@ -30,7 +30,8 @@ void initCanvas(Canvas *canvas, FPGAData *fpga_data, uint8_t *canvas_buffer, boo
     memset(fpga_buffer, 0, FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT * sizeof(bool));
 }
 
-void cleanCanvas(Canvas *canvas, FPGAData *fpga_data) {
+void cleanCanvas(Canvas *canvas, FPGAData *fpga_data)
+{
     // reset sizes
     canvas->width = canvas->height = 0;
     canvas->pixels = NULL;
@@ -38,14 +39,11 @@ void cleanCanvas(Canvas *canvas, FPGAData *fpga_data) {
     fpga_data->pixels = NULL;
 }
 
-/* 
+/*
 //Non-static version. Static version is safer.
-void initCanvas(int canvas_height, int canvas_width, int fgpa_data_height, int fgpa_data_width, Canvas *canvas, FPGAData *fpga_data) {
-    canvas->width = canvas_width;
-    canvas->height = canvas_height;
-    canvas->pixels = (uint8_t *)malloc(canvas_width * canvas_height * sizeof(uint8_t));
-    if (canvas->pixels == NULL) {
-        free(canvas->pixels);
+void initCanvas(int canvas_height, int canvas_width, int fgpa_data_height, int fgpa_data_width, Canvas *canvas, FPGAData
+*fpga_data) { canvas->width = canvas_width; canvas->height = canvas_height; canvas->pixels = (uint8_t
+*)malloc(canvas_width * canvas_height * sizeof(uint8_t)); if (canvas->pixels == NULL) { free(canvas->pixels);
         canvas->pixels = NULL;
         canvas->width = canvas->height = 0;
         return;
@@ -72,56 +70,68 @@ void cleanCanvas(Canvas *canvas, FPGAData *fpga_data) {
 }
 */
 
-void initBrushstroke(int brushstroke_height, int brushstroke_width, Canvas *brushstroke) {
+void initBrushstroke(int brushstroke_height, int brushstroke_width, Canvas *brushstroke)
+{
     brushstroke->height = brushstroke_height;
     brushstroke->width = brushstroke_width;
     brushstroke->pixels = brushstroke_data;
 }
 
-void cleanBrushstroke(Canvas *brushstroke) {
+void cleanBrushstroke(Canvas *brushstroke)
+{
     brushstroke->height = brushstroke->width = 0;
     brushstroke->pixels = NULL;
 }
 
-void drawPixel(int x, int y, uint8_t shade, Canvas *canvas) {
-    if (x < 0 || x >= canvas->width || y < 0 || y >= canvas->height) 
+void drawPixel(int x, int y, uint8_t shade, Canvas *canvas)
+{
+    if (x < 0 || x >= canvas->width || y < 0 || y >= canvas->height)
         return;
-    
+
     int index = canvas->width * y + x;
-    uint16_t sum = canvas->pixels[index] + shade;  // promote to 16-bit to prevent overflow
+    uint16_t sum = canvas->pixels[index] + shade; // promote to 16-bit to prevent overflow
     if (sum > 255)
         sum = 255;
     canvas->pixels[index] = (uint8_t)sum;
 }
 
-void drawBrushStroke(int x, int y, Canvas *brushstroke, Canvas *canvas) {
+void drawBrushStroke(int x, int y, Canvas *brushstroke, Canvas *canvas)
+{
     // brushstroke is odd numbered sided square.
     int length_from_center = (brushstroke->width - 1) / 2;
-    
-    for(int i = -1 * length_from_center; i < length_from_center + 1; i++) {
-        for(int j = -1 * length_from_center; j < length_from_center + 1; j++) {
+
+    for (int i = -1 * length_from_center; i < length_from_center + 1; i++)
+    {
+        for (int j = -1 * length_from_center; j < length_from_center + 1; j++)
+        {
             int canvas_x = x + i;
             int canvas_y = y + j;
 
-            if (!(canvas_x < 0 || canvas_x > canvas->width || canvas_y < 0 || canvas_y > canvas->height)) {
-                uint8_t shade = brushstroke->pixels[(j + length_from_center) * brushstroke->width + (i + length_from_center)];
+            if (!(canvas_x < 0 || canvas_x > canvas->width || canvas_y < 0 || canvas_y > canvas->height))
+            {
+                uint8_t shade =
+                    brushstroke->pixels[(j + length_from_center) * brushstroke->width + (i + length_from_center)];
                 drawPixel(canvas_x, canvas_y, shade, canvas);
             }
-            
         }
     }
 }
 
-void calculateFPGAData(int fpga_x, int fpga_y, Canvas *canvas, FPGAData *fpga_data) {
+void calculateFPGAData(int fpga_x, int fpga_y, Canvas *canvas, FPGAData *fpga_data)
+{
     // since we cannot erase -> we do not need to check a value that is already 1
-    if (fpga_data->pixels[fpga_y*FPGA_MAX_WIDTH + fpga_x]) return;
+    if (fpga_data->pixels[fpga_y * FPGA_MAX_WIDTH + fpga_x])
+        return;
 
     uint32_t sum = 0;
-    for (int i = fpga_x * KERNEL_WIDTH; i < (fpga_x+1) * KERNEL_WIDTH; i++) {
-        for (int j = fpga_y * KERNEL_HEIGHT; j < (fpga_y+1) * KERNEL_HEIGHT; j++) {
+    for (int i = fpga_x * KERNEL_WIDTH; i < (fpga_x + 1) * KERNEL_WIDTH; i++)
+    {
+        for (int j = fpga_y * KERNEL_HEIGHT; j < (fpga_y + 1) * KERNEL_HEIGHT; j++)
+        {
             sum += canvas->pixels[j * canvas->width + i];
-            if (sum >=FPGA_DATA_THRESHOLD) {
-                fpga_data->pixels[fpga_y*FPGA_MAX_WIDTH + fpga_x] = true;
+            if (sum >= FPGA_DATA_THRESHOLD)
+            {
+                fpga_data->pixels[fpga_y * FPGA_MAX_WIDTH + fpga_x] = true;
                 return;
             }
         }
