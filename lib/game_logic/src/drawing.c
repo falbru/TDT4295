@@ -162,11 +162,27 @@ int main(void) {
     drawBrushStroke(126, 126, &brushstroke, &canvas);
 
     // Simulate calculating FPGA data
-    calculateFPGAData(5, 5, &canvas, &fpga);
+    calculateFPGAData(14, 14, &canvas, &fpga);
 
     // Print one example pixel to confirm
     printf("Center pixel intensity: %u\n", canvas.pixels[126 * canvas.width + 126]);
-    printf("FPGA[5,5] = %d\n", fpga.pixels[5 * fpga.width + 5]);
+    printf("FPGA[14,14] = %d\n", fpga.pixels[14 * fpga.width + 14]);
+
+        // Draw the brushstroke in the middle of the canvas
+    drawBrushStroke(126, 126, &brushstroke, &canvas);
+
+    // Simulate calculating FPGA data
+    calculateFPGAData(14, 14, &canvas, &fpga);
+
+    // Print one example pixel to confirm
+    printf("Center pixel intensity: %u\n", canvas.pixels[126 * canvas.width + 126]);
+    printf("FPGA[14,14] = %d\n", fpga.pixels[14 * fpga.width + 14]);
+
+            // Draw the brushstroke in the middle of the canvas
+    drawBrushStroke(1, 1, &brushstroke, &canvas);
+
+    // Print one example pixel to confirm
+    printf("Center pixel intensity: %u\n", canvas.pixels[1 * canvas.width + 1]);
 
     cleanCanvas(&canvas, &fpga);
     cleanBrushstroke(&brushstroke);
