@@ -27,8 +27,8 @@
 #ifndef CMSIS_OS_H_
 #define CMSIS_OS_H_
 
-#define osCMSIS               0x20001U  ///< API version (main[31:16].sub[15:0])
+#define osCMSIS 0x20001U ///< API version (main[31:16].sub[15:0])
 
 #include "cmsis_os2.h"
 
-#endif  // CMSIS_OS_H_
+#endif // CMSIS_OS_H_
