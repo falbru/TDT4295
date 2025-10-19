@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>  //TODO: remove in actual program
-#include <stdlib.h> // for malloc, free
-#include <string.h> // for memset
+#include <stdlib.h> // for malloc, might remove in actual program
+#include <string.h> // for memset, might remove in actual program
 
 #define CANVAS_MAX_WIDTH 252
 #define CANVAS_MAX_HEIGHT 252
@@ -134,6 +134,17 @@ void calculateFPGAData(int fpga_x, int fpga_y, Canvas *canvas, FPGAData *fpga_da
                 fpga_data->pixels[fpga_y * FPGA_MAX_WIDTH + fpga_x] = true;
                 return;
             }
+        }
+    }
+}
+
+void calculateAllFPGAData(Canvas *canvas, FPGAData *fpga_data)
+{
+    for (int i = 0; i < FPGA_MAX_WIDTH; i++)
+    {
+        for (int j = 0; j < FPGA_MAX_HEIGHT; j++)
+        {
+            calculateFPGAData(i, j, canvas, fpga_data);
         }
     }
 }

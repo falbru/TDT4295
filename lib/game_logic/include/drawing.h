@@ -27,5 +27,6 @@ void cleanBrushstroke(Canvas *brushstroke);
 void drawPixel(int x, int y, uint8_t shade, Canvas *canvas);
 void drawBrushStroke(int x, int y, Canvas *brushstroke, Canvas *canvas);
 void calculateFPGAData(int fpga_x, int fpga_y, Canvas *canvas, FPGAData *fpga_data);
+void calculateAllFPGAData(Canvas *canvas, FPGAData *fpga_data);
 
 #endif

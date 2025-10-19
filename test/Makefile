@@ -3,7 +3,7 @@ CC := gcc
 CFLAGS := -Wall -Wextra -g -I../lib/game_logic/include
 
 # Source files
-SRC := ../lib/game_logic/src/drawing.c ./vendor/Unity/src/unity.c test_game_logic.c
+SRC := ../lib/game_logic/src/drawing.c ../lib/game_logic/src/game_query.c ./vendor/Unity/src/unity.c test_game_logic.c
 OUT := test_game_logic
 
 # Default target

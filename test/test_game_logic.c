@@ -1,13 +1,14 @@
-#include "../lib/game_logic/include/drawing.h"
-#include "../lib/game_logic/include/brushstroke.h"
+#include "brushstroke.h"
+#include "drawing.h"
+#include "game_query.h"
 #include "vendor/Unity/src/unity.h"
 
-#define CANVAS_MAX_WIDTH  252
+#define CANVAS_MAX_WIDTH 252
 #define CANVAS_MAX_HEIGHT 252
-#define FPGA_MAX_WIDTH    28
-#define FPGA_MAX_HEIGHT   28
-#define KERNEL_WIDTH      9
-#define KERNEL_HEIGHT     9
+#define FPGA_MAX_WIDTH 28
+#define FPGA_MAX_HEIGHT 28
+#define KERNEL_WIDTH 9
+#define KERNEL_HEIGHT 9
 
 static uint8_t canvas_buffer[CANVAS_MAX_WIDTH * CANVAS_MAX_HEIGHT];
 static bool fpga_buffer[FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT];
@@ -15,12 +16,14 @@ static bool fpga_buffer[FPGA_MAX_WIDTH * FPGA_MAX_HEIGHT];
 static Canvas canvas;
 static FPGAData fpga;
 static Canvas brushstroke;
+extern char gameQueries[QUERY_COUNT][MAX_QUERY_LENGTH];
 
 // ---- Setup and Teardown ----
 void setUp(void)
 {
     initCanvas(&canvas, &fpga, canvas_buffer, fpga_buffer);
     initBrushstroke(BRUSHSTROKE_HEIGHT, BRUSHSTROKE_WIDTH, &brushstroke);
+    srand(0);
 }
 
 void tearDown(void)
@@ -34,11 +37,13 @@ void tearDown(void)
 void test_initCanvas_initializes_buffers_to_zero(void)
 {
     // All pixels should be zero after init
-    for (int i = 0; i < canvas.width * canvas.height; i++) {
+    for (int i = 0; i < canvas.width * canvas.height; i++)
+    {
         TEST_ASSERT_EQUAL_UINT8(0, canvas.pixels[i]);
     }
 
-    for (int i = 0; i < fpga.width * fpga.height; i++) {
+    for (int i = 0; i < fpga.width * fpga.height; i++)
+    {
         TEST_ASSERT_FALSE(fpga.pixels[i]);
     }
 }
@@ -63,10 +68,11 @@ void test_drawPixel_does_not_write_out_of_bounds(void)
     drawPixel(CANVAS_MAX_WIDTH, 0, 100, &canvas);
     drawPixel(0, CANVAS_MAX_HEIGHT, 100, &canvas);
     // Should still all be zero
-    for (int i = 0; i < canvas.width * canvas.height; i++) {
-            char msg[64];
-            snprintf(msg, sizeof(msg), "Pixel index %d failed (value=%u)", i, canvas.pixels[i]);
-            TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, canvas.pixels[i], msg);
+    for (int i = 0; i < canvas.width * canvas.height; i++)
+    {
+        char msg[64];
+        snprintf(msg, sizeof(msg), "Pixel index %d failed (value=%u)", i, canvas.pixels[i]);
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, canvas.pixels[i], msg);
     }
 }
 
@@ -82,8 +88,10 @@ void test_drawBrushStroke_draws_pattern(void)
 void test_calculateFPGAData_sets_true_when_sum_exceeds_threshold(void)
 {
     // Manually fill one region with strong pixels
-    for (int j = 0; j < KERNEL_HEIGHT; j++) {
-        for (int i = 0; i < KERNEL_WIDTH; i++) {
+    for (int j = 0; j < KERNEL_HEIGHT; j++)
+    {
+        for (int i = 0; i < KERNEL_WIDTH; i++)
+        {
             canvas.pixels[j * canvas.width + i] = 255;
         }
     }
@@ -104,6 +112,68 @@ void test_cleanCanvas_resets_pointers_and_sizes(void)
     TEST_ASSERT_EQUAL_INT(0, fpga.height);
 }
 
+void test_calculateAllFPGAData_sets_true(void)
+{
+    drawBrushStroke(249, 3, &brushstroke, &canvas);
+    drawBrushStroke(250, 2, &brushstroke, &canvas);
+    calculateAllFPGAData(&canvas, &fpga);
+    TEST_ASSERT_FALSE(fpga.pixels[0]);
+    drawBrushStroke(3, 3, &brushstroke, &canvas);
+    drawBrushStroke(4, 4, &brushstroke, &canvas);
+    calculateAllFPGAData(&canvas, &fpga);
+    TEST_ASSERT_TRUE(fpga.pixels[0]);
+}
+
+void test_getGameQuery_returns_valid_query(void)
+{
+    GameQuery q;
+    getGameQuery(&q);
+
+    TEST_ASSERT_TRUE(q.queryIndex < QUERY_COUNT);
+
+    bool found = false;
+    for (int i = 0; i < QUERY_COUNT; i++)
+    {
+        if (strcmp(q.queryName, gameQueries[i]) == 0)
+        {
+            found = true;
+            break;
+        }
+    }
+    TEST_ASSERT_TRUE_MESSAGE(found, "Returned queryName not found in gameQueries");
+}
+
+void test_checkGameResult_returns_false_and_sets_result_when_different(void)
+{
+    GameQuery original = {"Lorem", 0};
+    GameQuery result;
+
+    bool match = checkGameResult(&original, &result, 2);
+
+    TEST_ASSERT_FALSE(match);
+    TEST_ASSERT_EQUAL_UINT8(2, result.queryIndex);
+    TEST_ASSERT_EQUAL_STRING(gameQueries[2], result.queryName);
+}
+
+void test_checkGameResult_returns_correct_values(void)
+{
+    GameQuery orig_q;
+    getGameQuery(&orig_q);
+    GameQuery result_q;
+
+    for (int i = 0; i < QUERY_COUNT; i++)
+    {
+        if (i == orig_q.queryIndex)
+        {
+            TEST_ASSERT_TRUE(checkGameResult(&orig_q, &result_q, i));
+        }
+        else
+        {
+            TEST_ASSERT_FALSE(checkGameResult(&orig_q, &result_q, i));
+        }
+    }
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -113,5 +183,9 @@ int main(void)
     RUN_TEST(test_drawBrushStroke_draws_pattern);
     RUN_TEST(test_calculateFPGAData_sets_true_when_sum_exceeds_threshold);
     RUN_TEST(test_cleanCanvas_resets_pointers_and_sizes);
+    RUN_TEST(test_calculateAllFPGAData_sets_true);
+    RUN_TEST(test_getGameQuery_returns_valid_query);
+    RUN_TEST(test_checkGameResult_returns_false_and_sets_result_when_different);
+    RUN_TEST(test_checkGameResult_returns_correct_values);
     return UNITY_END();
 }
