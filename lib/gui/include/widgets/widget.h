@@ -8,6 +8,7 @@ struct Widget;
 
 typedef enum {
     WIDGET_TYPE_BUTTON,
+    WIDGET_TYPE_LABEL,
     WIDGET_TYPE_CONTAINER,
     WIDGET_TYPE_PARAGRAPH,
     WIDGET_TYPE_IMAGE,

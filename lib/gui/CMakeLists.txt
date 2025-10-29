@@ -7,6 +7,7 @@ add_library(gui
     src/primitives/rectangle.c
     src/widgets/widget.c
     src/widgets/button.c
+    src/widgets/label.c
 )
 
 target_include_directories(gui PUBLIC include/)

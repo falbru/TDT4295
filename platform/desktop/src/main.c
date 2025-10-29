@@ -17,6 +17,7 @@ static SDL_Renderer *renderer = NULL;
 #include "primitives/text.h"
 #include "primitives/rectangle.h"
 #include "widgets/button.h"
+#include "widgets/label.h"
 #include "color.h"
 #include "font.h"
 
@@ -26,6 +27,8 @@ Framebuffer framebuffer;
 
 static Widget *button1 = NULL;
 static Widget *button2 = NULL;
+static Widget *label_title = NULL;
+static Widget *label_counter = NULL;
 
 static int click_count = 0;
 static bool needs_redraw = true;
@@ -51,12 +54,13 @@ void render_framebuffer()
         framebuffer.pixels[i] = 0;
     }
 
-    renderText("Widget Demo - Click the buttons!", COLOR_WHITE, 10, 10, &font_font, &framebuffer);
-
     char counter_text[64];
     snprintf(counter_text, sizeof(counter_text), "Clicks: %d", click_count);
-    renderText(counter_text, COLOR_WHITE, 10, 30, &font_font, &framebuffer);
+    label_set_text(label_counter, counter_text);
+    label_auto_size(label_counter);
 
+    widget_render(label_title, &framebuffer);
+    widget_render(label_counter, &framebuffer);
     widget_render(button1, &framebuffer);
     widget_render(button2, &framebuffer);
 
@@ -85,6 +89,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         pixels[i] = 0;
     }
     framebuffer = (Framebuffer){pixels, WINDOW_WIDTH, WINDOW_HEIGHT};
+
+    label_title = label_create_auto(10, 10, "Widget Demo - Click the buttons!", &font_font);
+    label_set_color(label_title, COLOR_WHITE);
+
+    label_counter = label_create_auto(10, 30, "Clicks: 0", &font_font);
+    label_set_color(label_counter, COLOR_WHITE);
 
     button1 = button_create_auto(10, 60, "Click Me!", &font_font);
     button_set_background_color(button1, COLOR_GRAY_75);
@@ -152,6 +162,16 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
+    if (label_title)
+    {
+        widget_destroy(label_title);
+        free(label_title);
+    }
+    if (label_counter)
+    {
+        widget_destroy(label_counter);
+        free(label_counter);
+    }
     if (button1)
     {
         widget_destroy(button1);
