@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+import os
+import argparse
 
 def load_bdf(filename):
     with open(filename, 'r') as f:
@@ -54,19 +56,13 @@ def load_bdf(filename):
 
     return chars
 
-def generate_c_header(chars):
-    print("#ifndef BDF_FONT_H")
-    print("#define BDF_FONT_H")
+def generate_c_header(chars, font_name):
+    header_guard = f"{font_name.upper()}_FONT_H"
+
+    print(f"#ifndef {header_guard}")
+    print(f"#define {header_guard}")
     print()
-    print("typedef struct {")
-    print("    int encoding;")
-    print("    int width;")
-    print("    int bbx_width;")
-    print("    int bbx_height;")
-    print("    int bbx_xoff;")
-    print("    int bbx_yoff;")
-    print("    const unsigned int* bitmap;")
-    print("} bdf_char_t;")
+    print('#include "font_types.h"')
     print()
 
     for encoding in sorted(chars.keys()):
@@ -74,28 +70,43 @@ def generate_c_header(chars):
         bitmap = char_data.get("bitmap", [])
         bbx = char_data.get("bbx", [0, 0, 0, 0])
 
-        print(f"static const unsigned int char_{encoding}_bitmap[] = {{")
+        print(f"static const unsigned int {font_name}_char_{encoding}_bitmap[] = {{")
         for hex_line in bitmap:
             value = int(hex_line, 16)
             print(f"    0x{value:02X},")
         print("};")
         print()
 
-    print("static const bdf_char_t font_chars[] = {")
+    print(f"static const bdf_char_t {font_name}_chars[] = {{")
     for encoding in sorted(chars.keys()):
         char_data = chars[encoding]
         bbx = char_data.get("bbx", [0, 0, 0, 0])
         dwidth = char_data.get("dwidth", 0)
-        print(f"    {{{encoding}, {dwidth}, {bbx[0]}, {bbx[1]}, {bbx[2]}, {bbx[3]}, char_{encoding}_bitmap}},")
+        print(f"    {{{encoding}, {dwidth}, {bbx[0]}, {bbx[1]}, {bbx[2]}, {bbx[3]}, {font_name}_char_{encoding}_bitmap}},")
     print("};")
     print()
-    print(f"#define FONT_CHAR_COUNT {len(chars)}")
+    print(f"#define {font_name.upper()}_CHAR_COUNT {len(chars)}")
     print()
-    print("#endif")
+    print(f"static const bdf_font_t {font_name}_font = {{")
+    print(f"    .chars = {font_name}_chars,")
+    print(f"    .char_count = {font_name.upper()}_CHAR_COUNT")
+    print("};")
+    print()
+    print(f"#endif")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Convert BDF font file to C header')
+    parser.add_argument('input', help='Input BDF font file')
+    parser.add_argument('--name', help='Font name (defaults to basename of input file)')
 
-    chars = load_bdf(sys.argv[1])
-    generate_c_header(chars)
+    args = parser.parse_args()
+
+    # Use provided name or derive from filename
+    if args.name:
+        font_name = args.name
+    else:
+        # Get basename without extension
+        font_name = os.path.splitext(os.path.basename(args.input))[0]
+
+    chars = load_bdf(args.input)
+    generate_c_header(chars, font_name)
