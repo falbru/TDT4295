@@ -1,4 +1,4 @@
-#include "text.h"
+#include "primitives/text.h"
 
 static const bdf_char_t *find_char(int encoding, const bdf_font_t *font)
 {
@@ -49,4 +49,41 @@ void renderText(const char *text, Color color, int x, int y, const bdf_font_t *f
 
         x_pos += ch->width;
     }
+}
+
+int measureTextWidth(const char *text, const bdf_font_t *font)
+{
+    if (!text || !font)
+        return 0;
+
+    int total_width = 0;
+
+    for (int i = 0; text[i] != '\0'; i++)
+    {
+        const bdf_char_t *ch = find_char((int)text[i], font);
+        if (ch)
+        {
+            total_width += ch->width;
+        }
+    }
+
+    return total_width;
+}
+
+int getFontHeight(const bdf_font_t *font)
+{
+    if (!font || font->char_count == 0)
+        return 0;
+
+    int max_height = 0;
+    for (int i = 0; i < font->char_count; i++)
+    {
+        int char_height = font->chars[i].bbx_height + font->chars[i].bbx_yoff;
+        if (char_height > max_height)
+        {
+            max_height = char_height;
+        }
+    }
+
+    return max_height;
 }

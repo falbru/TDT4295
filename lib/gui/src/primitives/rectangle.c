@@ -1,4 +1,4 @@
-#include "rectangle.h"
+#include "primitives/rectangle.h"
 
 void renderFilledRectangle(int x, int y, int width, int height, Color color, Framebuffer *framebuffer)
 {

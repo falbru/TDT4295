@@ -7,4 +7,8 @@
 
 void renderText(const char *text, Color color, int x, int y, const bdf_font_t *font, Framebuffer *framebuffer);
 
+int measureTextWidth(const char *text, const bdf_font_t *font);
+
+int getFontHeight(const bdf_font_t *font);
+
 #endif

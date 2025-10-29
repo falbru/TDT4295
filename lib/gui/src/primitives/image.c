@@ -1,4 +1,4 @@
-#include "image.h"
+#include "primitives/image.h"
 #include "asbjorn.h"
 
 void renderImage(int x, int y, Framebuffer *framebuffer)
