@@ -8,6 +8,7 @@ add_library(gui
     src/widgets/widget.c
     src/widgets/button.c
     src/widgets/label.c
+    src/widgets/canvas.c
 )
 
 target_include_directories(gui PUBLIC include/)

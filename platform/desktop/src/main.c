@@ -18,6 +18,7 @@ static SDL_Renderer *renderer = NULL;
 #include "primitives/rectangle.h"
 #include "widgets/button.h"
 #include "widgets/label.h"
+#include "widgets/canvas.h"
 #include "color.h"
 #include "font.h"
 
@@ -27,11 +28,14 @@ Framebuffer framebuffer;
 
 static Widget *button1 = NULL;
 static Widget *button2 = NULL;
+static Widget *button_clear = NULL;
 static Widget *label_title = NULL;
 static Widget *label_counter = NULL;
+static Widget *canvas = NULL;
 
 static int click_count = 0;
 static bool needs_redraw = true;
+static bool is_drawing = false;
 
 void on_button1_click(Widget *widget, void *user_data)
 {
@@ -44,6 +48,13 @@ void on_button2_click(Widget *widget, void *user_data)
 {
     printf("Button 2 clicked! Resetting counter.\n");
     click_count = 0;
+    needs_redraw = true;
+}
+
+void on_clear_canvas_click(Widget *widget, void *user_data)
+{
+    printf("Clearing canvas.\n");
+    canvas_clear(canvas);
     needs_redraw = true;
 }
 
@@ -63,6 +74,8 @@ void render_framebuffer()
     widget_render(label_counter, &framebuffer);
     widget_render(button1, &framebuffer);
     widget_render(button2, &framebuffer);
+    widget_render(button_clear, &framebuffer);
+    widget_render(canvas, &framebuffer);
 
     renderImage(10, 180, &framebuffer);
 }
@@ -109,6 +122,18 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     button_set_border(button2, COLOR_WHITE, 2);
     button_set_on_click(button2, on_button2_click, NULL);
 
+    int button3_x = button2->x + button2->width + 10;
+    button_clear = button_create_auto(button3_x, 60, "Clear Canvas", &font_font);
+    button_set_background_color(button_clear, COLOR_GRAY_75);
+    button_set_text_color(button_clear, COLOR_BLACK);
+    button_set_border(button_clear, COLOR_WHITE, 2);
+    button_set_on_click(button_clear, on_clear_canvas_click, NULL);
+
+    canvas = canvas_create(10, 105, 280, 150);
+    canvas_set_brush_size(canvas, 5);
+    canvas_set_brush_color(canvas, COLOR_BLACK);
+    canvas_set_border(canvas, COLOR_WHITE, 2);
+
     render_framebuffer();
 
     return SDL_APP_CONTINUE;
@@ -126,10 +151,41 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         int mouse_x = (int)event->button.x;
         int mouse_y = (int)event->button.y;
 
-        printf("Mouse clicked at (%d, %d)\n", mouse_x, mouse_y);
+        if (event->button.button == SDL_BUTTON_LEFT)
+        {
+            if (widget_contains_point(canvas, mouse_x, mouse_y))
+            {
+                is_drawing = true;
+                canvas_draw_at(canvas, mouse_x, mouse_y);
+                needs_redraw = true;
+            }
+            else
+            {
+                widget_handle_click(button1, mouse_x, mouse_y);
+                widget_handle_click(button2, mouse_x, mouse_y);
+                widget_handle_click(button_clear, mouse_x, mouse_y);
+            }
+        }
+    }
 
-        widget_handle_click(button1, mouse_x, mouse_y);
-        widget_handle_click(button2, mouse_x, mouse_y);
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
+    {
+        if (event->button.button == SDL_BUTTON_LEFT)
+        {
+            is_drawing = false;
+        }
+    }
+
+    if (event->type == SDL_EVENT_MOUSE_MOTION)
+    {
+        if (is_drawing)
+        {
+            int mouse_x = (int)event->motion.x;
+            int mouse_y = (int)event->motion.y;
+
+            canvas_draw_at(canvas, mouse_x, mouse_y);
+            needs_redraw = true;
+        }
     }
 
     return SDL_APP_CONTINUE;
@@ -181,6 +237,16 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     {
         widget_destroy(button2);
         free(button2);
+    }
+    if (button_clear)
+    {
+        widget_destroy(button_clear);
+        free(button_clear);
+    }
+    if (canvas)
+    {
+        widget_destroy(canvas);
+        free(canvas);
     }
 
     if (framebuffer.pixels)
