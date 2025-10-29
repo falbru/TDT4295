@@ -12,7 +12,7 @@ static const bdf_char_t *find_char(int encoding, const bdf_font_t *font)
     return 0;
 }
 
-void renderText(const char *text, uint8_t color, int x, int y, const bdf_font_t *font, Framebuffer *framebuffer)
+void renderText(const char *text, Color color, int x, int y, const bdf_font_t *font, Framebuffer *framebuffer)
 {
     if (!text)
         return;

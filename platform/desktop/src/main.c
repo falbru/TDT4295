@@ -14,6 +14,7 @@ static SDL_Renderer *renderer = NULL;
 #include "framebuffer.h"
 #include "image.h"
 #include "text.h"
+#include "rectangle.h"
 #include "font.h"
 
 Framebuffer framebuffer;
@@ -44,6 +45,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     framebuffer = (Framebuffer){pixels, WINDOW_WIDTH, WINDOW_HEIGHT};
 
     renderText("TDT4295 is fun!", 255, 0, 0, &font_font, &framebuffer);
+    renderFilledRectangle(300, 100, 100, 100, 255, &framebuffer);
     renderImage(0, 100, &framebuffer);
 
     return SDL_APP_CONTINUE;
