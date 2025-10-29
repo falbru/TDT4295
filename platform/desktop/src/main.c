@@ -3,10 +3,10 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -14,32 +14,23 @@ static SDL_Renderer *renderer = NULL;
 #define WINDOW_WIDTH 480
 #define WINDOW_HEIGHT 272
 
-#include "framebuffer.h"
-#include "widgets/button.h"
-#include "widgets/label.h"
-#include "widgets/canvas.h"
 #include "color.h"
 #include "font.h"
+#include "framebuffer.h"
+#include "widgets/button.h"
+#include "widgets/canvas.h"
+#include "widgets/label.h"
 
 Framebuffer framebuffer;
 
 #define FRAMEBUFFER_SIZE WINDOW_WIDTH *WINDOW_HEIGHT
 
-static const char *DRAWING_PROMPTS[] = {
-    "Cat",
-    "House",
-    "Tree",
-    "Car",
-    "Sun",
-    "Flower",
-    "Star",
-    "Fish",
-    "Heart",
-    "Circle"
-};
+static const char *DRAWING_PROMPTS[] = {"Cat",    "House", "Tree", "Car",   "Sun",
+                                        "Flower", "Star",  "Fish", "Heart", "Circle"};
 #define NUM_PROMPTS 10
 
-typedef enum {
+typedef enum
+{
     GAME_STATE_PLAYING,
     GAME_STATE_RESULT
 } GameState;
@@ -84,11 +75,14 @@ void on_guess_click(Widget *widget, void *user_data)
     bool correct = (guess_index == current_target_index);
 
     char result_text[256];
-    if (correct) {
+    if (correct)
+    {
         snprintf(result_text, sizeof(result_text), "Correct! I guessed: %s", guess);
-    } else {
-        snprintf(result_text, sizeof(result_text), "Incorrect! I guessed: %s",
-                 guess, DRAWING_PROMPTS[current_target_index]);
+    }
+    else
+    {
+        snprintf(result_text, sizeof(result_text), "Incorrect! I guessed: %s", guess,
+                 DRAWING_PROMPTS[current_target_index]);
     }
 
     label_set_text(label_result, result_text);

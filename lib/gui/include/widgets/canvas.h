@@ -4,13 +4,14 @@
 #include "color.h"
 #include "widgets/widget.h"
 
-typedef struct {
-  uint8_t *pixels;
-  int brush_size;
-  Color background_color;
-  Color brush_color;
-  Color border_color;
-  int border_thickness;
+typedef struct
+{
+    uint8_t *pixels;
+    int brush_size;
+    Color background_color;
+    Color brush_color;
+    Color border_color;
+    int border_thickness;
 } CanvasData;
 
 Widget *canvas_create(int x, int y, int width, int height);

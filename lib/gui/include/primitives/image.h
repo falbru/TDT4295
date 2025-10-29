@@ -4,7 +4,8 @@
 #include "framebuffer.h"
 #include <stdint.h>
 
-typedef struct {
+typedef struct
+{
     const uint8_t *data;
     int width;
     int height;

@@ -4,10 +4,8 @@
 #include "color.h"
 #include "framebuffer.h"
 
-void renderFilledRectangle(int x, int y, int width, int height, Color color,
-                           Framebuffer *framebuffer);
+void renderFilledRectangle(int x, int y, int width, int height, Color color, Framebuffer *framebuffer);
 
-void renderRectangle(int x, int y, int width, int height, Color color,
-                     int thickness, Framebuffer *framebuffer);
+void renderRectangle(int x, int y, int width, int height, Color color, int thickness, Framebuffer *framebuffer);
 
 #endif
