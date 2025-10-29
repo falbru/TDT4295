@@ -1,19 +1,18 @@
 #include "text.h"
-#include "font.h"
 
-static const bdf_char_t *find_char(int encoding)
+static const bdf_char_t *find_char(int encoding, const bdf_font_t *font)
 {
-    for (int i = 0; i < FONT_CHAR_COUNT; i++)
+    for (int i = 0; i < font->char_count; i++)
     {
-        if (font_chars[i].encoding == encoding)
+        if (font->chars[i].encoding == encoding)
         {
-            return &font_chars[i];
+            return &font->chars[i];
         }
     }
     return 0;
 }
 
-void renderText(const char *text, uint8_t color, int x, int y, Framebuffer *framebuffer)
+void renderText(const char *text, uint8_t color, int x, int y, const bdf_font_t *font, Framebuffer *framebuffer)
 {
     if (!text)
         return;
@@ -22,7 +21,7 @@ void renderText(const char *text, uint8_t color, int x, int y, Framebuffer *fram
 
     for (int i = 0; text[i] != '\0'; i++)
     {
-        const bdf_char_t *ch = find_char((int)text[i]);
+        const bdf_char_t *ch = find_char((int)text[i], font);
         if (!ch)
             continue;
 

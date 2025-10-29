@@ -2,8 +2,9 @@
 #define TEXT_H_INCLUDED
 
 #include "framebuffer.h"
+#include "font_types.h"
 #include <stdint.h>
 
-void renderText(const char *text, uint8_t color, int x, int y, Framebuffer *framebuffer);
+void renderText(const char *text, uint8_t color, int x, int y, const bdf_font_t *font, Framebuffer *framebuffer);
 
 #endif
