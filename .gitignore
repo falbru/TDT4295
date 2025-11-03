@@ -1,2 +1,3 @@
 build/
-./platform/desktop/include/font.h
+.cache/
+platform/desktop/include/font.h

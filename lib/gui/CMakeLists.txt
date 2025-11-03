@@ -9,6 +9,10 @@ add_library(gui
     src/widgets/button.c
     src/widgets/label.c
     src/widgets/canvas.c
+    src/widgets/container.c
+    src/widgets/hbox.c
+    src/widgets/vbox.c
+    src/widgets/grid.c
 )
 
 target_include_directories(gui PUBLIC include/)
