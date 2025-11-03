@@ -27,6 +27,7 @@ typedef struct
     int spacing;
     int padding;
     Alignment alignment;
+    Alignment justify;
     int grid_columns;
 } ContainerData;
 
@@ -39,6 +40,7 @@ void container_clear_children(Widget *container);
 void container_set_spacing(Widget *container, int spacing);
 void container_set_padding(Widget *container, int padding);
 void container_set_alignment(Widget *container, Alignment alignment);
+void container_set_justify(Widget *container, Alignment justify);
 void container_set_grid_columns(Widget *container, int columns);
 
 void container_update_layout(Widget *container);

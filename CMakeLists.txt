@@ -5,6 +5,8 @@ option(BUILD_DESKTOP "Build desktop version" ON)
 
 add_subdirectory(lib/gui)
 
+add_subdirectory(lib/game)
+
 if(BUILD_DESKTOP)
     add_subdirectory(platform/desktop)
 endif()

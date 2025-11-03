@@ -10,4 +10,6 @@ typedef struct
     int height;
 } Framebuffer;
 
+void framebuffer_clear(Framebuffer *framebuffer, Color clear_color);
+
 #endif

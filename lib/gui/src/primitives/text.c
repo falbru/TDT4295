@@ -25,6 +25,8 @@ void renderText(const char *text, Color color, int x, int y, const bdf_font_t *f
         if (!ch)
             continue;
 
+        int storage_width_bits = ((ch->bbx_width + 7) / 8) * 8;
+
         for (int row = 0; row < ch->bbx_height; row++)
         {
             unsigned int row_data = ch->bitmap[row];
@@ -35,7 +37,7 @@ void renderText(const char *text, Color color, int x, int y, const bdf_font_t *f
 
             for (int col = 0; col < ch->bbx_width; col++)
             {
-                if (row_data & (1u << (ch->bbx_width - 1 - col)))
+                if (row_data & (1u << (storage_width_bits - 1 - col)))
                 {
                     int pixel_x = x_pos + ch->bbx_xoff + col;
 

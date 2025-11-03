@@ -17,6 +17,7 @@ void widget_init(Widget *widget, WidgetType type, int x, int y, int width, int h
     widget->height = height;
     widget->visible = true;
     widget->enabled = true;
+    widget->parent = NULL;
     widget->on_click = NULL;
     widget->render = NULL;
     widget->destroy = NULL;
@@ -69,7 +70,8 @@ void widget_set_size(Widget *widget, int width, int height)
     widget->width = width;
     widget->height = height;
 
-    if (widget->type == WIDGET_TYPE_CONTAINER) {
+    if (widget->type == WIDGET_TYPE_CONTAINER)
+    {
         container_update_layout(widget);
     }
 }
@@ -78,7 +80,16 @@ void widget_set_visible(Widget *widget, bool visible)
 {
     if (!widget)
         return;
+
+    if (widget->visible == visible)
+        return;
+
     widget->visible = visible;
+
+    if (widget->parent && widget->parent->type == WIDGET_TYPE_CONTAINER)
+    {
+        container_update_layout(widget->parent);
+    }
 }
 
 void widget_set_enabled(Widget *widget, bool enabled)

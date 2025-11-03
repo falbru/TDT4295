@@ -32,6 +32,8 @@ typedef struct Widget
     bool visible;
     bool enabled;
 
+    struct Widget *parent;
+
     WidgetClickCallback on_click;
     WidgetRenderCallback render;
     WidgetDestroyCallback destroy;
