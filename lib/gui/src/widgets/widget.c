@@ -1,4 +1,5 @@
 #include "widgets/widget.h"
+#include "widgets/container.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -67,6 +68,10 @@ void widget_set_size(Widget *widget, int width, int height)
         return;
     widget->width = width;
     widget->height = height;
+
+    if (widget->type == WIDGET_TYPE_CONTAINER) {
+        container_update_layout(widget);
+    }
 }
 
 void widget_set_visible(Widget *widget, bool visible)

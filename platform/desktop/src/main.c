@@ -1,3 +1,6 @@
+#include "widgets/container.h"
+#include "widgets/hbox.h"
+#include "widgets/vbox.h"
 #include <SDL3/SDL_rect.h>
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
@@ -35,6 +38,8 @@ typedef enum
     GAME_STATE_RESULT
 } GameState;
 
+static Widget *container = NULL;
+static Widget *button_container = NULL;
 static Widget *label_prompt = NULL;
 static Widget *label_result = NULL;
 static Widget *button_guess = NULL;
@@ -114,12 +119,13 @@ void render_framebuffer()
         framebuffer.pixels[i] = 50;
     }
 
-    widget_render(label_prompt, &framebuffer);
-    widget_render(canvas, &framebuffer);
-    widget_render(button_guess, &framebuffer);
-    widget_render(button_clear, &framebuffer);
-    widget_render(button_retry, &framebuffer);
-    widget_render(label_result, &framebuffer);
+    // widget_render(label_prompt, &framebuffer);
+    // widget_render(canvas, &framebuffer);
+    widget_render(container, &framebuffer);
+    // widget_render(button_guess, &framebuffer);
+    // widget_render(button_clear, &framebuffer);
+    // widget_render(button_retry, &framebuffer);
+    // widget_render(label_result, &framebuffer);
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -150,33 +156,47 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     label_prompt = label_create_auto(10, 10, "Draw a: Cat", &font_font);
     label_set_color(label_prompt, COLOR_WHITE);
 
+    container = vbox_create(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    container_add_child(container, label_prompt);
+    container_set_padding(container, 8);
+    container_set_spacing(container, 8);
+
     canvas = canvas_create(10, 35, 460, 150);
     canvas_set_brush_size(canvas, 3);
     canvas_set_brush_color(canvas, COLOR_BLACK);
     canvas_set_border(canvas, COLOR_WHITE, 2);
+    container_add_child(container, canvas);
 
-    button_guess = button_create_auto(10, 195, "Guess", &font_font);
+    button_container = hbox_create(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    container_set_spacing(button_container, 4);
+
+    button_guess = button_create_auto(0, 0, "Guess", &font_font);
     button_set_background_color(button_guess, COLOR_GRAY_75);
     button_set_text_color(button_guess, COLOR_BLACK);
     button_set_border(button_guess, COLOR_WHITE, 2);
     button_set_on_click(button_guess, on_guess_click, NULL);
+    container_add_child(button_container, button_guess);
 
-    int clear_x = button_guess->x + button_guess->width + 10;
-    button_clear = button_create_auto(clear_x, 195, "Clear Canvas", &font_font);
+    button_clear = button_create_auto(0, 0, "Clear Canvas", &font_font);
     button_set_background_color(button_clear, COLOR_GRAY_75);
     button_set_text_color(button_clear, COLOR_BLACK);
     button_set_border(button_clear, COLOR_WHITE, 2);
     button_set_on_click(button_clear, on_clear_canvas_click, NULL);
+    container_add_child(button_container, button_clear);
 
-    button_retry = button_create_auto(clear_x, 195, "Try Again", &font_font);
+    button_retry = button_create_auto(0, 0, "Try Again", &font_font);
     button_set_background_color(button_retry, COLOR_GRAY_75);
     button_set_text_color(button_retry, COLOR_BLACK);
     button_set_border(button_retry, COLOR_WHITE, 2);
     button_set_on_click(button_retry, on_retry_click, NULL);
     widget_set_visible(button_retry, false);
+    container_add_child(button_container, button_retry);
+
+    container_add_child(container, button_container);
 
     label_result = label_create_auto(10, 250, "", &font_font);
     label_set_color(label_result, COLOR_WHITE);
+    container_add_child(container, label_result);
 
     start_new_round();
 
