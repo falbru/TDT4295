@@ -1,12 +1,15 @@
 #ifndef FRAMEBUFFER_H_INCLUDED
 #define FRAMEBUFFER_H_INCLUDED
 
-#include <stdint.h>
+#include "color.h"
+
 typedef struct
 {
-    uint8_t *pixels;
+    Color *pixels;
     int width;
     int height;
 } Framebuffer;
+
+void framebuffer_clear(Framebuffer *framebuffer, Color clear_color);
 
 #endif

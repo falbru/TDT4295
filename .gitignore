@@ -1,2 +1,5 @@
 build/
-./platform/desktop/include/font.h
+.cache/
+lib/game/include/font_small.h
+lib/game/include/font_medium.h
+lib/game/include/font_large.h
