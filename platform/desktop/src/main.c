@@ -22,12 +22,9 @@ static const char *DRAWING_PROMPTS[] = {"Cat",    "House", "Tree", "Car",   "Sun
                                         "Flower", "Star",  "Fish", "Heart", "Circle"};
 #define NUM_PROMPTS 10
 
-int on_guess_request(const uint8_t *canvas_28x28, void *user_data)
+void on_guess_request(const uint8_t *canvas_28x28, void *user_data)
 {
-
-    printf("Canvas 28x28 received. First pixel: %d\n", canvas_28x28[0]);
-
-    return rand() % NUM_PROMPTS;
+    game_send_guess(rand() % NUM_PROMPTS);
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])

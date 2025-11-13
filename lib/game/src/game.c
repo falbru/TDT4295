@@ -19,12 +19,6 @@
 #define SPACING_MD 4
 #define SPACING_LG 8
 
-typedef enum
-{
-    GAME_STATE_PLAYING,
-    GAME_STATE_RESULT
-} GameState;
-
 static struct
 {
     const char **drawing_prompts;
@@ -37,6 +31,7 @@ static struct
     bool needs_redraw;
     bool is_drawing;
     bool initialized;
+    unsigned int score;
 
     Widget *root_container;
     Widget *button_container;
@@ -47,10 +42,6 @@ static struct
     Widget *button_clear;
     Widget *button_retry;
 } g_game = {0};
-
-static void on_guess_click(Widget *widget, void *user_data);
-static void on_clear_canvas_click(Widget *widget, void *user_data);
-static void on_retry_click(Widget *widget, void *user_data);
 
 bool game_init(const GameConfig *config)
 {
@@ -125,7 +116,7 @@ bool game_init(const GameConfig *config)
     button_set_background_color(g_game.button_guess, COLOR_GRAY_75);
     button_set_text_color(g_game.button_guess, COLOR_BLACK);
     button_set_border(g_game.button_guess, COLOR_WHITE, 2);
-    button_set_on_click(g_game.button_guess, on_guess_click, NULL);
+    button_set_on_click(g_game.button_guess, game_on_guess_click, NULL);
     container_add_child(g_game.button_container, g_game.button_guess);
 
     g_game.button_clear = button_create_auto(0, 0, "Clear", button_font);
@@ -137,7 +128,7 @@ bool game_init(const GameConfig *config)
     button_set_background_color(g_game.button_clear, COLOR_GRAY_75);
     button_set_text_color(g_game.button_clear, COLOR_BLACK);
     button_set_border(g_game.button_clear, COLOR_WHITE, 2);
-    button_set_on_click(g_game.button_clear, on_clear_canvas_click, NULL);
+    button_set_on_click(g_game.button_clear, game_on_clear_canvas_click, NULL);
     container_add_child(g_game.button_container, g_game.button_clear);
 
     container_add_child(g_game.root_container, g_game.button_container);
@@ -151,7 +142,7 @@ bool game_init(const GameConfig *config)
     button_set_background_color(g_game.button_retry, COLOR_GRAY_75);
     button_set_text_color(g_game.button_retry, COLOR_BLACK);
     button_set_border(g_game.button_retry, COLOR_WHITE, 2);
-    button_set_on_click(g_game.button_retry, on_retry_click, NULL);
+    button_set_on_click(g_game.button_retry, game_on_retry_click, NULL);
     widget_set_visible(g_game.button_retry, false);
     container_add_child(g_game.root_container, g_game.button_retry);
 
@@ -206,6 +197,46 @@ void game_start_new_round(void)
     widget_set_visible(g_game.button_retry, false);
 
     canvas_clear(g_game.canvas);
+
+    g_game.needs_redraw = true;
+}
+
+void game_set_prompt(int index)
+{
+    g_game.current_prompt_index = index;
+}
+
+void game_send_guess(int guess_index)
+{
+    if (!g_game.initialized || g_game.state != GAME_STATE_WAITING_FOR_GUESS)
+        return;
+
+    const char *guess = g_game.drawing_prompts[guess_index];
+    bool correct = (guess_index == (int)g_game.current_prompt_index);
+
+    if (correct)
+    {
+        g_game.score++;
+    }
+
+    char result_text[256];
+    if (correct)
+    {
+        snprintf(result_text, sizeof(result_text), "Correct! I guessed: %s", guess);
+    }
+    else
+    {
+        snprintf(result_text, sizeof(result_text), "Wrong! I guessed: %s (was: %s)", guess,
+                 g_game.drawing_prompts[g_game.current_prompt_index]);
+    }
+
+    label_set_text(g_game.label_result, result_text);
+    label_auto_size(g_game.label_result);
+
+    g_game.state = GAME_STATE_RESULT;
+    widget_set_visible(g_game.button_guess, false);
+    widget_set_visible(g_game.button_clear, false);
+    widget_set_visible(g_game.button_retry, true);
 
     g_game.needs_redraw = true;
 }
@@ -346,55 +377,42 @@ int game_get_state(void)
     return (int)g_game.state;
 }
 
-static void on_guess_click(Widget *widget, void *user_data)
+bool game_is_initialized(void)
+{
+    return g_game.initialized;
+}
+
+void game_set_random_seed(unsigned int seed)
+{
+    srand(seed);
+}
+
+unsigned int game_get_score(void)
+{
+    return g_game.score;
+}
+
+void game_on_guess_click(Widget *widget, void *user_data)
 {
     if (!g_game.initialized)
         return;
 
-    int guess_index = -1;
-
     if (g_game.guess_callback)
     {
+        g_game.state = GAME_STATE_WAITING_FOR_GUESS;
+
         uint8_t canvas_28x28[28 * 28];
         game_get_canvas_28x28(canvas_28x28);
-        guess_index = g_game.guess_callback(canvas_28x28, g_game.callback_user_data);
-
-        if (guess_index < 0 || guess_index >= (int)g_game.num_prompts)
-        {
-            guess_index = rand() % g_game.num_prompts;
-        }
+        g_game.guess_callback(canvas_28x28, g_game.callback_user_data);
     }
     else
     {
-        guess_index = rand() % g_game.num_prompts;
+        g_game.state = GAME_STATE_WAITING_FOR_GUESS;
+        game_send_guess(rand() % g_game.num_prompts);
     }
-
-    const char *guess = g_game.drawing_prompts[guess_index];
-    bool correct = (guess_index == (int)g_game.current_prompt_index);
-
-    char result_text[256];
-    if (correct)
-    {
-        snprintf(result_text, sizeof(result_text), "Correct! I guessed: %s", guess);
-    }
-    else
-    {
-        snprintf(result_text, sizeof(result_text), "Wrong! I guessed: %s (was: %s)", guess,
-                 g_game.drawing_prompts[g_game.current_prompt_index]);
-    }
-
-    label_set_text(g_game.label_result, result_text);
-    label_auto_size(g_game.label_result);
-
-    g_game.state = GAME_STATE_RESULT;
-    widget_set_visible(g_game.button_guess, false);
-    widget_set_visible(g_game.button_clear, false);
-    widget_set_visible(g_game.button_retry, true);
-
-    g_game.needs_redraw = true;
 }
 
-static void on_clear_canvas_click(Widget *widget, void *user_data)
+void game_on_clear_canvas_click(Widget *widget, void *user_data)
 {
     if (!g_game.initialized)
         return;
@@ -403,7 +421,7 @@ static void on_clear_canvas_click(Widget *widget, void *user_data)
     g_game.needs_redraw = true;
 }
 
-static void on_retry_click(Widget *widget, void *user_data)
+void game_on_retry_click(Widget *widget, void *user_data)
 {
     game_start_new_round();
 }
