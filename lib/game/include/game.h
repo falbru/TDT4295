@@ -3,10 +3,18 @@
 
 #include "font_types.h"
 #include "framebuffer.h"
+#include "widgets/widget.h"
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef int (*game_guess_callback_t)(const uint8_t *canvas_28x28, void *user_data);
+typedef void (*game_guess_callback_t)(const uint8_t *canvas_28x28, void *user_data);
+
+typedef enum
+{
+    GAME_STATE_PLAYING,
+    GAME_STATE_WAITING_FOR_GUESS,
+    GAME_STATE_RESULT
+} GameState;
 
 typedef struct
 {
@@ -28,6 +36,8 @@ void game_cleanup(void);
 
 void game_start_new_round(void);
 
+void game_set_prompt(int index);
+
 bool game_render(Framebuffer *framebuffer);
 
 bool game_needs_redraw(void);
@@ -40,8 +50,20 @@ bool game_handle_mouse_move(unsigned int x, unsigned int y);
 
 void game_get_canvas_28x28(uint8_t *output_buffer);
 
+void game_send_guess(int guess_index);
+
 int game_get_current_prompt_index(void);
 
 int game_get_state(void);
+
+bool game_is_initialized(void);
+
+void game_set_random_seed(unsigned int seed);
+
+unsigned int game_get_score(void);
+
+void game_on_guess_click(Widget *widget, void *user_data);
+void game_on_clear_canvas_click(Widget *widget, void *user_data);
+void game_on_retry_click(Widget *widget, void *user_data);
 
 #endif
