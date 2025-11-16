@@ -5,6 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Helper macro to compare Color structs component by component
+#define TEST_ASSERT_EQUAL_COLOR(expected, actual) \
+    do { \
+        TEST_ASSERT_EQUAL_UINT8((expected).a, (actual).a); \
+        TEST_ASSERT_EQUAL_UINT8((expected).r, (actual).r); \
+        TEST_ASSERT_EQUAL_UINT8((expected).g, (actual).g); \
+        TEST_ASSERT_EQUAL_UINT8((expected).b, (actual).b); \
+    } while(0)
+
 static Widget *button;
 
 void setUp(void)
@@ -100,13 +109,13 @@ void test_button_set_background_color(void)
     button_set_background_color(button, COLOR_WHITE);
 
     ButtonData *data = (ButtonData *)button->data;
-    TEST_ASSERT_EQUAL_UINT32(COLOR_WHITE, data->background_color);
+    TEST_ASSERT_EQUAL_COLOR(COLOR_WHITE, data->background_color);
 }
 
 void test_button_default_background_color(void)
 {
     ButtonData *data = (ButtonData *)button->data;
-    TEST_ASSERT_EQUAL_UINT32(COLOR_GRAY_75, data->background_color);
+    TEST_ASSERT_EQUAL_COLOR(COLOR_GRAY_75, data->background_color);
 }
 
 void test_button_set_text_color(void)
@@ -114,13 +123,13 @@ void test_button_set_text_color(void)
     button_set_text_color(button, COLOR_WHITE);
 
     ButtonData *data = (ButtonData *)button->data;
-    TEST_ASSERT_EQUAL_UINT32(COLOR_WHITE, data->text_color);
+    TEST_ASSERT_EQUAL_COLOR(COLOR_WHITE, data->text_color);
 }
 
 void test_button_default_text_color(void)
 {
     ButtonData *data = (ButtonData *)button->data;
-    TEST_ASSERT_EQUAL_UINT32(COLOR_BLACK, data->text_color);
+    TEST_ASSERT_EQUAL_COLOR(COLOR_BLACK, data->text_color);
 }
 
 void test_button_set_border(void)
@@ -128,14 +137,14 @@ void test_button_set_border(void)
     button_set_border(button, COLOR_GRAY_50, 3);
 
     ButtonData *data = (ButtonData *)button->data;
-    TEST_ASSERT_EQUAL_UINT32(COLOR_GRAY_50, data->border_color);
+    TEST_ASSERT_EQUAL_COLOR(COLOR_GRAY_50, data->border_color);
     TEST_ASSERT_EQUAL_INT(3, data->border_thickness);
 }
 
 void test_button_default_border(void)
 {
     ButtonData *data = (ButtonData *)button->data;
-    TEST_ASSERT_EQUAL_UINT32(COLOR_BLACK, data->border_color);
+    TEST_ASSERT_EQUAL_COLOR(COLOR_BLACK, data->border_color);
     TEST_ASSERT_EQUAL_INT(1, data->border_thickness);
 }
 
