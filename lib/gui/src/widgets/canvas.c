@@ -22,7 +22,7 @@ Widget *canvas_create(int x, int y, int width, int height)
     }
 
     int pixel_count = width * height;
-    data->pixels = (uint8_t *)malloc(pixel_count * sizeof(uint8_t));
+    data->pixels = (Color *)malloc(pixel_count * sizeof(Color));
     if (!data->pixels)
     {
         free(data);
@@ -30,7 +30,10 @@ Widget *canvas_create(int x, int y, int width, int height)
         return NULL;
     }
 
-    memset(data->pixels, COLOR_WHITE, pixel_count);
+    for (int i = 0; i < pixel_count; i++)
+    {
+        data->pixels[i] = COLOR_WHITE;
+    }
 
     data->brush_size = 3;
     data->background_color = COLOR_WHITE;
@@ -184,5 +187,8 @@ void canvas_clear(Widget *canvas)
         return;
 
     int pixel_count = canvas->width * canvas->height;
-    memset(data->pixels, data->background_color, pixel_count);
+    for (int i = 0; i < pixel_count; i++)
+    {
+        data->pixels[i] = data->background_color;
+    }
 }

@@ -6,7 +6,7 @@
 
 typedef struct
 {
-    uint8_t *pixels;
+    Color *pixels;
     int brush_size;
     Color background_color;
     Color brush_color;

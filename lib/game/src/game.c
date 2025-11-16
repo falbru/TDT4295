@@ -248,7 +248,7 @@ bool game_render(Framebuffer *framebuffer)
 
     if (g_game.needs_redraw)
     {
-        framebuffer_clear(framebuffer, 50);
+        framebuffer_clear(framebuffer, COLOR_RGB(50, 50, 50));
 
         widget_render(g_game.root_container, framebuffer);
 
@@ -353,10 +353,11 @@ void game_get_canvas_28x28(uint8_t *output_buffer)
             float fx = src_x - x0;
             float fy = src_y - y0;
 
-            uint8_t p00 = canvas_data->pixels[y0 * canvas_width + x0];
-            uint8_t p10 = canvas_data->pixels[y0 * canvas_width + x1];
-            uint8_t p01 = canvas_data->pixels[y1 * canvas_width + x0];
-            uint8_t p11 = canvas_data->pixels[y1 * canvas_width + x1];
+            // Extract grayscale value from 32-bit colors (using red channel)
+            uint8_t p00 = COLOR_GET_R(canvas_data->pixels[y0 * canvas_width + x0]);
+            uint8_t p10 = COLOR_GET_R(canvas_data->pixels[y0 * canvas_width + x1]);
+            uint8_t p01 = COLOR_GET_R(canvas_data->pixels[y1 * canvas_width + x0]);
+            uint8_t p11 = COLOR_GET_R(canvas_data->pixels[y1 * canvas_width + x1]);
 
             float p0 = p00 * (1.0f - fx) + p10 * fx;
             float p1 = p01 * (1.0f - fx) + p11 * fx;

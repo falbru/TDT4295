@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "color.h"
 #include "framebuffer.h"
 #include "game.h"
 
@@ -45,7 +46,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    uint8_t *pixels = malloc(sizeof(uint8_t) * FRAMEBUFFER_SIZE);
+    Color *pixels = malloc(sizeof(Color) * FRAMEBUFFER_SIZE);
     if (!pixels)
     {
         SDL_Log("Failed to allocate framebuffer");
@@ -116,8 +117,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     {
         for (int x = 0; x < WINDOW_WIDTH; x++)
         {
-            uint8_t pixel = framebuffer.pixels[y * WINDOW_WIDTH + x];
-            SDL_SetRenderDrawColor(renderer, pixel, pixel, pixel, SDL_ALPHA_OPAQUE);
+            Color pixel = framebuffer.pixels[y * WINDOW_WIDTH + x];
+            uint8_t r = COLOR_GET_R(pixel);
+            uint8_t g = COLOR_GET_G(pixel);
+            uint8_t b = COLOR_GET_B(pixel);
+            uint8_t a = COLOR_GET_A(pixel);
+            SDL_SetRenderDrawColor(renderer, r, g, b, a);
             SDL_RenderPoint(renderer, x, y);
         }
     }
