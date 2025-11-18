@@ -9,7 +9,6 @@
 #include "widgets/label.h"
 #include "widgets/vbox.h"
 #include "widgets/widget.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,6 +17,19 @@
 #define SPACING_SM 2
 #define SPACING_MD 4
 #define SPACING_LG 8
+
+static void str_concat(char *dest, size_t dest_size, const char *src)
+{
+    size_t dest_len = strlen(dest);
+    size_t i = 0;
+
+    while (src[i] != '\0' && (dest_len + i) < (dest_size - 1))
+    {
+        dest[dest_len + i] = src[i];
+        i++;
+    }
+    dest[dest_len + i] = '\0';
+}
 
 static struct
 {
@@ -185,7 +197,9 @@ void game_start_new_round(void)
     g_game.state = GAME_STATE_PLAYING;
 
     char prompt_text[128];
-    snprintf(prompt_text, sizeof(prompt_text), "Draw a: %s", g_game.drawing_prompts[g_game.current_prompt_index]);
+    prompt_text[0] = '\0';
+    str_concat(prompt_text, sizeof(prompt_text), "Draw a: ");
+    str_concat(prompt_text, sizeof(prompt_text), g_game.drawing_prompts[g_game.current_prompt_index]);
     label_set_text(g_game.label_prompt, prompt_text);
     label_auto_size(g_game.label_prompt);
     container_update_layout(g_game.root_container);
@@ -220,14 +234,19 @@ void game_send_guess(int guess_index)
     }
 
     char result_text[256];
+    result_text[0] = '\0';
     if (correct)
     {
-        snprintf(result_text, sizeof(result_text), "Correct! I guessed: %s", guess);
+        str_concat(result_text, sizeof(result_text), "Correct! I guessed: ");
+        str_concat(result_text, sizeof(result_text), guess);
     }
     else
     {
-        snprintf(result_text, sizeof(result_text), "Wrong! I guessed: %s (was: %s)", guess,
-                 g_game.drawing_prompts[g_game.current_prompt_index]);
+        str_concat(result_text, sizeof(result_text), "Wrong! I guessed: ");
+        str_concat(result_text, sizeof(result_text), guess);
+        str_concat(result_text, sizeof(result_text), " (was: ");
+        str_concat(result_text, sizeof(result_text), g_game.drawing_prompts[g_game.current_prompt_index]);
+        str_concat(result_text, sizeof(result_text), ")");
     }
 
     label_set_text(g_game.label_result, result_text);
