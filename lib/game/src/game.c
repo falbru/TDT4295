@@ -17,6 +17,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Include character images for title
+#include "s_char.h"
+#include "k_char.h"
+#include "i_char.h"
+#include "d_char.h"
+#include "a_char.h"
+#include "l_char.h"
+#include "e_char.h"
+
 #define DEFAULT_CANVAS_WIDTH 28 * 8
 #define DEFAULT_CANVAS_HEIGHT 28 * 8
 #define SPACING_SM 2
@@ -115,13 +124,30 @@ bool game_init(const GameConfig *config)
     container_set_justify(g_game.menu_container, ALIGN_CENTER);
     container_add_child(g_game.top_container, g_game.menu_container);
 
-    g_game.label_title = label_create_auto(0, 0, "Skidaddle", label_font);
+    // Create title as hbox with character images
+    g_game.label_title = hbox_create(0, 0, config->window_width, 32); // Auto-size based on children
     if (!g_game.label_title)
     {
         game_cleanup();
         return false;
     }
-    label_set_color(g_game.label_title, COLOR_BLACK);
+    container_set_spacing(g_game.label_title, 2); // No spacing between letters
+    container_set_justify(g_game.label_title, ALIGN_CENTER);
+
+    // Add character images for "SKIDADDLE"
+    const Image *title_chars[] = {&s_image, &k_image, &i_image, &d_image, &a_image, &d_image, &d_image, &l_image, &e_image};
+    for (int i = 0; i < 9; i++)
+    {
+        Widget *char_widget = image_widget_create(0, 0, title_chars[i]);
+        if (!char_widget)
+        {
+            game_cleanup();
+            return false;
+        }
+        container_add_child(g_game.label_title, char_widget);
+    }
+    printf("%d", g_game.label_title->height);
+
     container_add_child(g_game.menu_container, g_game.label_title);
 
     g_game.button_play = button_create_auto(0, 0, "Play", button_font);
