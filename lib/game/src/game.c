@@ -9,15 +9,18 @@
 #include "widgets/label.h"
 #include "widgets/vbox.h"
 #include "widgets/widget.h"
+#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define DEFAULT_CANVAS_WIDTH 28 * 4
-#define DEFAULT_CANVAS_HEIGHT 28 * 4
+#define DEFAULT_CANVAS_WIDTH 28 * 8
+#define DEFAULT_CANVAS_HEIGHT 28 * 8
 #define SPACING_SM 2
 #define SPACING_MD 4
 #define SPACING_LG 8
+#define SPACING_XL 16
 
 static void str_concat(char *dest, size_t dest_size, const char *src)
 {
@@ -86,7 +89,7 @@ bool game_init(const GameConfig *config)
         return false;
     }
     container_set_padding(g_game.root_container, SPACING_LG);
-    container_set_spacing(g_game.root_container, SPACING_MD);
+    container_set_spacing(g_game.root_container, SPACING_XL);
 
     g_game.label_prompt = label_create_auto(0, 0, "Draw: ", label_font);
     if (!g_game.label_prompt)
@@ -103,7 +106,7 @@ bool game_init(const GameConfig *config)
         game_cleanup();
         return false;
     }
-    canvas_set_brush_size(g_game.canvas, 3);
+    canvas_set_brush_size(g_game.canvas, 7);
     canvas_set_brush_color(g_game.canvas, COLOR_BLACK);
     canvas_set_background_color(g_game.canvas, COLOR_WHITE);
     canvas_set_border(g_game.canvas, COLOR_WHITE, 2);
@@ -118,17 +121,17 @@ bool game_init(const GameConfig *config)
     container_set_spacing(g_game.button_container, SPACING_MD);
     container_set_justify(g_game.button_container, ALIGN_CENTER);
 
-    g_game.button_clear = button_create_auto(0, 0, "Clear", button_font);
-    if (!g_game.button_clear)
-    {
-        game_cleanup();
-        return false;
-    }
-    button_set_background_color(g_game.button_clear, COLOR_GRAY_75);
-    button_set_text_color(g_game.button_clear, COLOR_BLACK);
-    button_set_border(g_game.button_clear, COLOR_WHITE, 2);
-    button_set_on_click(g_game.button_clear, game_on_clear_canvas_click, NULL);
-    container_add_child(g_game.button_container, g_game.button_clear);
+    // g_game.button_clear = button_create_auto(0, 0, "Clear", button_font);
+    // if (!g_game.button_clear)
+    // {
+    //     game_cleanup();
+    //     return false;
+    // }
+    // button_set_background_color(g_game.button_clear, COLOR_GRAY_75);
+    // button_set_text_color(g_game.button_clear, COLOR_BLACK);
+    // button_set_border(g_game.button_clear, COLOR_WHITE, 2);
+    // button_set_on_click(g_game.button_clear, game_on_clear_canvas_click, NULL);
+    // container_add_child(g_game.button_container, g_game.button_clear);
 
     container_add_child(g_game.root_container, g_game.button_container);
 
@@ -334,33 +337,32 @@ void game_get_canvas_28x28(uint8_t *output_buffer)
     {
         for (int out_x = 0; out_x < 28; out_x++)
         {
-            float src_x = out_x * x_scale;
-            float src_y = out_y * y_scale;
+            float center_x = (out_x + 0.5f) * x_scale;
+            float center_y = (out_y + 0.5f) * y_scale;
 
-            int x0 = (int)src_x;
-            int y0 = (int)src_y;
-            int x1 = x0 + 1;
-            int y1 = y0 + 1;
+            int start_x = (int)(center_x - x_scale * 0.5f);
+            int end_x = (int)(center_x + x_scale * 0.5f);
+            int start_y = (int)(center_y - y_scale * 0.5f);
+            int end_y = (int)(center_y + y_scale * 0.5f);
 
-            if (x1 >= canvas_width)
-                x1 = canvas_width - 1;
-            if (y1 >= canvas_height)
-                y1 = canvas_height - 1;
+            start_x = start_x < 0 ? 0 : start_x;
+            end_x = end_x >= canvas_width ? canvas_width - 1 : end_x;
+            start_y = start_y < 0 ? 0 : start_y;
+            end_y = end_y >= canvas_height ? canvas_height - 1 : end_y;
 
-            float fx = src_x - x0;
-            float fy = src_y - y0;
+            int sum = 0;
+            int count = 0;
 
-            // Extract grayscale value from 32-bit colors (using red channel)
-            uint8_t p00 = COLOR_GET_R(canvas_data->pixels[y0 * canvas_width + x0]);
-            uint8_t p10 = COLOR_GET_R(canvas_data->pixels[y0 * canvas_width + x1]);
-            uint8_t p01 = COLOR_GET_R(canvas_data->pixels[y1 * canvas_width + x0]);
-            uint8_t p11 = COLOR_GET_R(canvas_data->pixels[y1 * canvas_width + x1]);
+            for (int y = start_y; y <= end_y; y++)
+            {
+                for (int x = start_x; x <= end_x; x++)
+                {
+                    sum += canvas_data->pixels[y * canvas_width + x];
+                    count++;
+                }
+            }
 
-            float p0 = p00 * (1.0f - fx) + p10 * fx;
-            float p1 = p01 * (1.0f - fx) + p11 * fx;
-            float result = p0 * (1.0f - fy) + p1 * fy;
-
-            output_buffer[out_y * 28 + out_x] = (uint8_t)result;
+            output_buffer[out_y * 28 + out_x] = count > 0 ? (uint8_t)(sum / count) : 0;
         }
     }
 }
@@ -405,7 +407,7 @@ void game_on_guess_click(Widget *widget, void *user_data)
     }
     else
     {
-        g_game.state = GAME_STATE_WAITING_FOR_GUESS;
+        // g_game.state = GAME_STATE_WAITING_FOR_GUESS;
         game_send_guess(rand() % g_game.num_prompts);
     }
 }
@@ -421,5 +423,57 @@ void game_on_clear_canvas_click(Widget *widget, void *user_data)
 
 void game_on_retry_click(Widget *widget, void *user_data)
 {
-    game_start_new_round();
+    uint8_t output[28*28];
+    game_get_canvas_28x28(output);
+
+    FILE *f;
+    unsigned char *img = NULL;
+    int w = 28, h = 28;
+    int filesize = 54 + 3*w*h;
+
+    img = (unsigned char *)malloc(3*w*h);
+    memset(img,0,3*w*h);
+
+    for(int i=0; i<w; i++)
+    {
+        for(int j=0; j<h; j++)
+        {
+            int x=i;
+            int y=(h-1-j);
+            uint8_t intensity = output[j*28+i];
+            img[(x+y*w)*3+2] = intensity;
+            img[(x+y*w)*3+1] = intensity;
+            img[(x+y*w)*3+0] = intensity;
+        }
+    }
+
+    unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
+    unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0};
+    unsigned char bmppad[3] = {0,0,0};
+
+    bmpfileheader[ 2] = (unsigned char)(filesize    );
+    bmpfileheader[ 3] = (unsigned char)(filesize>> 8);
+    bmpfileheader[ 4] = (unsigned char)(filesize>>16);
+    bmpfileheader[ 5] = (unsigned char)(filesize>>24);
+
+    bmpinfoheader[ 4] = (unsigned char)(       w    );
+    bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
+    bmpinfoheader[ 6] = (unsigned char)(       w>>16);
+    bmpinfoheader[ 7] = (unsigned char)(       w>>24);
+    bmpinfoheader[ 8] = (unsigned char)(       h    );
+    bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
+    bmpinfoheader[10] = (unsigned char)(       h>>16);
+    bmpinfoheader[11] = (unsigned char)(       h>>24);
+
+    f = fopen("img.bmp","wb");
+    fwrite(bmpfileheader,1,14,f);
+    fwrite(bmpinfoheader,1,40,f);
+    for(int i=0; i<h; i++)
+    {
+        fwrite(img+(w*i*3),3,w,f);
+        fwrite(bmppad,1,(4-(w*3)%4)%4,f);
+    }
+
+    free(img);
+    fclose(f);
 }

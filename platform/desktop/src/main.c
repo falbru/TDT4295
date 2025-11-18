@@ -1,3 +1,5 @@
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_oldnames.h>
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -13,8 +15,8 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
-#define WINDOW_WIDTH 480
-#define WINDOW_HEIGHT 272
+#define WINDOW_WIDTH 272
+#define WINDOW_HEIGHT 480
 #define FRAMEBUFFER_SIZE (WINDOW_WIDTH * WINDOW_HEIGHT)
 
 static Framebuffer framebuffer;
@@ -83,6 +85,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_QUIT)
     {
         return SDL_APP_SUCCESS;
+    }
+
+    if (event->type == SDL_EVENT_KEY_UP) {
+        game_on_retry_click(NULL, NULL);
     }
 
     if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN && event->button.button == SDL_BUTTON_LEFT)

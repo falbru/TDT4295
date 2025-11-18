@@ -1,4 +1,5 @@
 #include "widgets/canvas.h"
+#include "color.h"
 #include "primitives/rectangle.h"
 #include "widgets/widget.h"
 #include <stdlib.h>
@@ -23,7 +24,7 @@ Widget *canvas_create(int x, int y, int width, int height)
     }
 
     int pixel_count = width * height;
-    data->pixels = (Color *)malloc(pixel_count * sizeof(Color));
+    data->pixels = (uint8_t *)malloc(pixel_count * sizeof(uint8_t));
     if (!data->pixels)
     {
         free(data);
@@ -33,7 +34,7 @@ Widget *canvas_create(int x, int y, int width, int height)
 
     for (int i = 0; i < pixel_count; i++)
     {
-        data->pixels[i] = COLOR_WHITE;
+        data->pixels[i] = 0;
     }
 
     data->brush_size = 3;
@@ -67,7 +68,9 @@ static void canvas_render_callback(Widget *widget, Framebuffer *framebuffer)
 
             if (fb_x >= 0 && fb_x < framebuffer->width && fb_y >= 0 && fb_y < framebuffer->height)
             {
-                FRAMEBUFFER_SET_PIXEL(framebuffer, fb_x, fb_y, data->pixels[canvas_idx]);
+                Color c = COLOR_WHITE;
+                if (data->pixels[canvas_idx] > 0) c= COLOR_BLACK;
+                FRAMEBUFFER_SET_PIXEL(framebuffer, fb_x, fb_y, c);
             }
         }
     }
@@ -171,7 +174,7 @@ void canvas_draw_at(Widget *canvas, int x, int y)
             if (px >= 0 && px < canvas->width && py >= 0 && py < canvas->height)
             {
                 int idx = py * canvas->width + px;
-                data->pixels[idx] = data->brush_color;
+                data->pixels[idx] = 255;
             }
         }
     }
@@ -191,7 +194,7 @@ void canvas_clear(Widget *canvas)
     int pixel_count = canvas->width * canvas->height;
     for (int i = 0; i < pixel_count; i++)
     {
-        data->pixels[i] = data->background_color;
+        data->pixels[i] = 0;
     }
 
     widget_mark_dirty(canvas);
