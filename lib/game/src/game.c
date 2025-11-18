@@ -280,15 +280,7 @@ bool game_render(Framebuffer *framebuffer)
 
         g_game.needs_redraw = false;
 
-        for (int i = 0; i < framebuffer->dirty_rect_count; i++) {
-            DirtyRect rect = framebuffer->dirty_rects[i];
-            for (int y = rect.y; y < rect.y + rect.height; y++) {
-                for (int x = rect.x; x < rect.x + rect.width; x++) {
-                    framebuffer->pixels[y * framebuffer->width + x] = COLOR_RGB(50, 50, 50);
-                }
-            }
-        }
-        framebuffer->dirty_rect_count = 0;
+        framebuffer_clear_dirty_rects(framebuffer, COLOR_RGB(50, 50, 50));
 
         return true;
     }

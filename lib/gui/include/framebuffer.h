@@ -27,5 +27,6 @@ typedef struct
 #define FRAMEBUFFER_SET_PIXEL(fb, x, y, color) ((fb)->pixels[(y) * (fb)->width + (x)] = (color))
 
 void framebuffer_clear(Framebuffer *framebuffer, Color clear_color);
+void framebuffer_clear_dirty_rects(Framebuffer *framebuffer, Color clear_color);
 
 #endif
