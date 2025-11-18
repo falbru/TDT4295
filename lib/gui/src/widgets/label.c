@@ -1,4 +1,6 @@
 #include "widgets/label.h"
+#include "color.h"
+#include "framebuffer.h"
 #include "primitives/text.h"
 #include "widgets/widget.h"
 #include <stdio.h>
@@ -41,6 +43,13 @@ static void label_render_callback(Widget *widget, Framebuffer *framebuffer)
         return;
 
     LabelData *data = (LabelData *)widget->data;
+
+    for (int y = widget->prev_y - 5; y < widget->prev_y + widget->prev_height; y++) {
+        for (int i = widget->prev_x; i < widget->prev_x + widget->prev_width; i++) {
+            if (y >= 0)
+            FRAMEBUFFER_SET_PIXEL(framebuffer, i, y, COLOR_RGB(50, 50, 50));
+        }
+    }
 
     if (data->text && data->font)
     {

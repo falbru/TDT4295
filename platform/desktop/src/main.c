@@ -18,6 +18,7 @@ static SDL_Renderer *renderer = NULL;
 #define FRAMEBUFFER_SIZE (WINDOW_WIDTH * WINDOW_HEIGHT)
 
 static Framebuffer framebuffer;
+static Uint64 last_guess_time = 0;
 
 static const char *DRAWING_PROMPTS[] = {"Cat",    "House", "Tree", "Car",   "Sun",
                                         "Flower", "Star",  "Fish", "Heart", "Circle"};
@@ -72,6 +73,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
+    last_guess_time = SDL_GetTicks();
+
     return SDL_APP_CONTINUE;
 }
 
@@ -108,6 +111,13 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
+    Uint64 current_time = SDL_GetTicks();
+    if (current_time - last_guess_time >= 1000)
+    {
+        on_guess_request(NULL, NULL);
+        last_guess_time = current_time;
+    }
+
     game_render(&framebuffer);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
