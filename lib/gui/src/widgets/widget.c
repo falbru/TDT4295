@@ -1,5 +1,6 @@
 #include "widgets/widget.h"
 #include "widgets/container.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,6 +24,7 @@ void widget_init(Widget *widget, WidgetType type, int x, int y, int width, int h
     widget->destroy = NULL;
     widget->user_data = NULL;
     widget->data = NULL;
+    widget->dirty = true;
 }
 
 void widget_destroy(Widget *widget)
@@ -46,13 +48,25 @@ void widget_render(Widget *widget, Framebuffer *framebuffer)
 {
     if (!widget || !framebuffer)
         return;
-    if (!widget->visible)
+
+    if (!widget->visible && widget->dirty) {
+        framebuffer->dirty_rects[framebuffer->dirty_rect_count] = (DirtyRect){widget->prev_x, widget->prev_y, widget->prev_width, widget->prev_height};
+        framebuffer->dirty_rect_count++;
+    }
+
+    if (!widget->visible || !widget->dirty)
         return;
 
     if (widget->render)
     {
         widget->render(widget, framebuffer);
     }
+
+    widget->dirty = false;
+    widget->prev_x = widget->x;
+    widget->prev_y = widget->y;
+    widget->prev_width = widget->width;
+    widget->prev_height = widget->height;
 }
 
 void widget_set_position(Widget *widget, int x, int y)
@@ -85,6 +99,7 @@ void widget_set_visible(Widget *widget, bool visible)
         return;
 
     widget->visible = visible;
+    widget_mark_dirty(widget);
 
     if (widget->parent && widget->parent->type == WIDGET_TYPE_CONTAINER)
     {
@@ -97,6 +112,15 @@ void widget_set_enabled(Widget *widget, bool enabled)
     if (!widget)
         return;
     widget->enabled = enabled;
+}
+
+void widget_mark_dirty(Widget *widget)
+{
+    if (!widget)
+        return;
+    if (widget->parent)
+        widget_mark_dirty(widget->parent);
+    widget->dirty = true;
 }
 
 bool widget_contains_point(Widget *widget, int x, int y)

@@ -1,6 +1,8 @@
 #include "widgets/button.h"
+#include "framebuffer.h"
 #include "primitives/rectangle.h"
 #include "primitives/text.h"
+#include "widgets/widget.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -102,6 +104,9 @@ void button_set_padding(Widget *button, int padding)
     if (!data)
         return;
 
+    if (data->padding != padding) {
+        widget_mark_dirty(button);
+    }
     data->padding = padding;
 }
 
@@ -114,6 +119,9 @@ void button_set_background_color(Widget *button, Color color)
     if (!data)
         return;
 
+    if (!COLOR_COMPARE(data->background_color, color)) {
+        widget_mark_dirty(button);
+    }
     data->background_color = color;
 }
 
@@ -126,6 +134,9 @@ void button_set_text_color(Widget *button, Color color)
     if (!data)
         return;
 
+    if (!COLOR_COMPARE(data->text_color, color)) {
+        widget_mark_dirty(button);
+    }
     data->text_color = color;
 }
 
@@ -138,6 +149,9 @@ void button_set_border(Widget *button, Color color, int thickness)
     if (!data)
         return;
 
+    if (!COLOR_COMPARE(data->text_color, color) || data->border_thickness != thickness) {
+        widget_mark_dirty(button);
+    }
     data->border_color = color;
     data->border_thickness = thickness;
 }
@@ -152,6 +166,7 @@ void button_set_font(Widget *button, const bdf_font_t *font)
         return;
 
     data->font = font;
+    widget_mark_dirty(button);
 }
 
 void button_set_on_click(Widget *button, WidgetClickCallback callback, void *user_data)

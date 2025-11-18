@@ -1,5 +1,6 @@
 #include "widgets/canvas.h"
 #include "primitives/rectangle.h"
+#include "widgets/widget.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -174,6 +175,8 @@ void canvas_draw_at(Widget *canvas, int x, int y)
             }
         }
     }
+
+    widget_mark_dirty(canvas);
 }
 
 void canvas_clear(Widget *canvas)
@@ -190,4 +193,6 @@ void canvas_clear(Widget *canvas)
     {
         data->pixels[i] = data->background_color;
     }
+
+    widget_mark_dirty(canvas);
 }

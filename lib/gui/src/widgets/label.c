@@ -1,5 +1,7 @@
 #include "widgets/label.h"
 #include "primitives/text.h"
+#include "widgets/widget.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -75,6 +77,7 @@ void label_set_text(Widget *label, const char *text)
     }
 
     data->text = text ? strdup(text) : NULL;
+    widget_mark_dirty(label);
 }
 
 void label_set_color(Widget *label, Color color)

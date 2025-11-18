@@ -32,6 +32,13 @@ typedef struct Widget
     bool visible;
     bool enabled;
 
+    bool dirty;
+    int prev_x;
+    int prev_y;
+    int prev_width;
+    int prev_height;
+
+
     struct Widget *parent;
 
     WidgetClickCallback on_click;
@@ -51,6 +58,7 @@ void widget_set_position(Widget *widget, int x, int y);
 void widget_set_size(Widget *widget, int width, int height);
 void widget_set_visible(Widget *widget, bool visible);
 void widget_set_enabled(Widget *widget, bool enabled);
+void widget_mark_dirty(Widget *widget);
 
 bool widget_contains_point(Widget *widget, int x, int y);
 void widget_handle_click(Widget *widget, int x, int y);

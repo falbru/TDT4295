@@ -9,6 +9,7 @@
 #include "widgets/label.h"
 #include "widgets/vbox.h"
 #include "widgets/widget.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -204,7 +205,8 @@ void game_start_new_round(void)
     label_auto_size(g_game.label_prompt);
     container_update_layout(g_game.root_container);
 
-    label_set_text(g_game.label_result, "");
+    widget_set_visible(g_game.label_prompt, true);
+    widget_set_visible(g_game.label_result, false);
 
     widget_set_visible(g_game.button_guess, true);
     widget_set_visible(g_game.button_clear, true);
@@ -252,6 +254,9 @@ void game_send_guess(int guess_index)
     label_set_text(g_game.label_result, result_text);
     label_auto_size(g_game.label_result);
 
+    widget_set_visible(g_game.label_result, true);
+    widget_set_visible(g_game.label_prompt, true);
+
     g_game.state = GAME_STATE_RESULT;
     widget_set_visible(g_game.button_guess, false);
     widget_set_visible(g_game.button_clear, false);
@@ -265,13 +270,26 @@ bool game_render(Framebuffer *framebuffer)
     if (!g_game.initialized || !framebuffer)
         return false;
 
+    static bool first = true;
     if (g_game.needs_redraw)
     {
-        framebuffer_clear(framebuffer, COLOR_RGB(50, 50, 50));
+        if (first) framebuffer_clear(framebuffer, COLOR_RGB(50, 50, 50));
+        first = false;
 
         widget_render(g_game.root_container, framebuffer);
 
         g_game.needs_redraw = false;
+
+        for (int i = 0; i < framebuffer->dirty_rect_count; i++) {
+            DirtyRect rect = framebuffer->dirty_rects[i];
+            for (int y = rect.y; y < rect.y + rect.height; y++) {
+                for (int x = rect.x; x < rect.x + rect.width; x++) {
+                    framebuffer->pixels[y * framebuffer->width + x] = COLOR_RGB(50, 50, 50);
+                }
+            }
+        }
+        framebuffer->dirty_rect_count = 0;
+
         return true;
     }
 

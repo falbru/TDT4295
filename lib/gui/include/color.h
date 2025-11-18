@@ -21,10 +21,14 @@ typedef struct {
 #define COLOR_ARGB(a, r, g, b) ((Color){a, r, g, b})
 #define COLOR_RGB(r, g, b) COLOR_ARGB(0xFF, r, g, b)
 
+#define COLOR_COMPARE(c1, c2) (c1.a == c2.a && c1.r == c2.r && c1.g == c2.g && c1.b == c2.b)
+
 // Extract components from ARGB color
 #define COLOR_GET_A(color) ((color).a)
 #define COLOR_GET_R(color) ((color).r)
 #define COLOR_GET_G(color) ((color).g)
 #define COLOR_GET_B(color) ((color).b)
+
+int compare_colors(Color* a, Color* b);
 
 #endif
