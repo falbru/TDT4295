@@ -9,6 +9,7 @@ static void container_destroy_callback(Widget *widget);
 static void update_hbox_layout(Widget *container);
 static void update_vbox_layout(Widget *container);
 static void update_grid_layout(Widget *container);
+static float sine(float phase, float amplitude);
 
 Widget *container_create(int x, int y, int width, int height, LayoutType layout_type)
 {
@@ -42,6 +43,9 @@ Widget *container_create(int x, int y, int width, int height, LayoutType layout_
     data->alignment = ALIGN_START;
     data->justify = ALIGN_START;
     data->grid_columns = 2;
+    data->animation = ANIMATION_NONE;
+    data->animation_phase = 0.0f;
+    data->animation_speed = 1;
 
     container->data = data;
     container->render = container_render_callback;
@@ -267,6 +271,8 @@ void container_update_layout(Widget *container)
 
     switch (data->layout_type)
     {
+    case LAYOUT_TYPE_NONE:
+        break;
     case LAYOUT_TYPE_HBOX:
         update_hbox_layout(container);
         break;
@@ -365,6 +371,12 @@ static void update_hbox_layout(Widget *container)
             {
                 child_y = container->y + data->padding;
             }
+        }
+
+        if (data->animation == ANIMATION_FLOATING)
+        {
+            float phase_diff = 20.0f;
+            child_y += sine(data->animation_phase + i * phase_diff, 10.0f);
         }
 
         widget_set_position(child, current_x, child_y);
@@ -545,4 +557,62 @@ Widget *container_get_child(Widget *container, int index)
         return NULL;
 
     return data->children[index];
+}
+
+static float sine(float phase, float amplitude)
+{
+    phase -= 360 * (int)(phase / 360.0f);
+
+    if (phase < 180)
+        return amplitude / 8100.0f * (180.0f*phase - phase*phase);
+
+    return amplitude / 8100.0f * (phase - 180.0f) * (phase - 360.0f);
+}
+
+void container_set_animation(Widget *container, AnimationType animation)
+{
+    if (!container || container->type != WIDGET_TYPE_CONTAINER)
+        return;
+
+    ContainerData *data = (ContainerData *)container->data;
+    if (!data)
+        return;
+
+    data->animation = animation;
+    container_update_layout(container);
+}
+
+void container_set_animation_speed(Widget *container, int speed)
+{
+    if (!container || container->type != WIDGET_TYPE_CONTAINER)
+        return;
+
+    ContainerData *data = (ContainerData *)container->data;
+    if (!data)
+        return;
+
+    data->animation_speed = speed > 0 ? speed : 1;
+}
+
+void container_update_animation(Widget *container, float delta_time)
+{
+    if (!container || container->type != WIDGET_TYPE_CONTAINER)
+        return;
+
+    ContainerData *data = (ContainerData *)container->data;
+    if (!data)
+        return;
+
+    if (data->animation == ANIMATION_NONE)
+        return;
+
+    // Update the animation phase based on delta_time
+    // animation_speed is degrees per second, delta_time is in seconds
+    float phase_increment = data->animation_speed * delta_time;
+    data->animation_phase += phase_increment;
+    if (data->animation_phase >= 360.0f)
+        data->animation_phase -= 360.0f;
+
+    // Trigger layout update to apply animation
+    container_update_layout(container);
 }

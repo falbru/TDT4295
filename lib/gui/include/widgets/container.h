@@ -19,6 +19,12 @@ typedef enum
     ALIGN_STRETCH,
 } Alignment;
 
+typedef enum
+{
+    ANIMATION_NONE,
+    ANIMATION_FLOATING,
+} AnimationType;
+
 typedef struct
 {
     Widget **children;
@@ -30,6 +36,9 @@ typedef struct
     Alignment alignment;
     Alignment justify;
     int grid_columns;
+    AnimationType animation;
+    float animation_phase;
+    int animation_speed;
 } ContainerData;
 
 Widget *container_create(int x, int y, int width, int height, LayoutType layout_type);
@@ -43,6 +52,10 @@ void container_set_padding(Widget *container, int padding);
 void container_set_alignment(Widget *container, Alignment alignment);
 void container_set_justify(Widget *container, Alignment justify);
 void container_set_grid_columns(Widget *container, int columns);
+
+void container_set_animation(Widget *container, AnimationType animation);
+void container_set_animation_speed(Widget *container, int speed);
+void container_update_animation(Widget *container, float delta_time);
 
 void container_update_layout(Widget *container);
 

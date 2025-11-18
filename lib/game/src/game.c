@@ -134,6 +134,10 @@ bool game_init(const GameConfig *config)
     container_set_spacing(g_game.label_title, 2); // No spacing between letters
     container_set_justify(g_game.label_title, ALIGN_CENTER);
 
+    // Set up floating animation for the title
+    container_set_animation(g_game.label_title, ANIMATION_FLOATING);
+    container_set_animation_speed(g_game.label_title, 60); // 60 degrees per second
+
     // Add character images for "SKIDADDLE"
     const Image *title_chars[] = {&s_image, &k_image, &i_image, &d_image, &a_image, &d_image, &d_image, &l_image, &e_image};
     for (int i = 0; i < 9; i++)
@@ -146,7 +150,6 @@ bool game_init(const GameConfig *config)
         }
         container_add_child(g_game.label_title, char_widget);
     }
-    printf("%d", g_game.label_title->height);
 
     container_add_child(g_game.menu_container, g_game.label_title);
 
@@ -274,6 +277,19 @@ void game_start_new_round(void)
 void game_set_prompt(int index)
 {
     g_game.current_prompt_index = index;
+}
+
+void game_update(float delta_time)
+{
+    if (!g_game.initialized)
+        return;
+
+    // Update animation for the title
+    if (g_game.label_title)
+    {
+        container_update_animation(g_game.label_title, delta_time);
+        g_game.needs_redraw = true;
+    }
 }
 
 void game_send_guess(int guess_index)

@@ -21,6 +21,7 @@ static SDL_Renderer *renderer = NULL;
 
 static Framebuffer framebuffer;
 static Uint64 last_guess_time = 0;
+static Uint64 last_frame_time = 0;
 
 static const char *DRAWING_PROMPTS[] = {"Cat",    "House", "Tree", "Car",   "Sun",
                                         "Flower", "Star",  "Fish", "Heart", "Circle"};
@@ -76,6 +77,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     last_guess_time = SDL_GetTicks();
+    last_frame_time = SDL_GetTicks();
 
     return SDL_APP_CONTINUE;
 }
@@ -121,6 +123,14 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     Uint64 current_time = SDL_GetTicks();
+
+    // Calculate delta time in seconds
+    float delta_time = (current_time - last_frame_time) / 1000.0f;
+    last_frame_time = current_time;
+
+    // Update game logic and animations
+    game_update(delta_time);
+
     if (current_time - last_guess_time >= 1000)
     {
         on_guess_request(NULL, NULL);

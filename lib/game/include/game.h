@@ -39,6 +39,8 @@ void game_start_new_round(void);
 
 void game_set_prompt(int index);
 
+void game_update(float delta_time);
+
 bool game_render(Framebuffer *framebuffer);
 
 bool game_needs_redraw(void);
