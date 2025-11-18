@@ -12,6 +12,11 @@ typedef struct
     Color brush_color;
     Color border_color;
     int border_thickness;
+    int dirty_x;
+    int dirty_y;
+    int dirty_width;
+    int dirty_height;
+    int has_dirty_rect;
 } CanvasData;
 
 Widget *canvas_create(int x, int y, int width, int height);

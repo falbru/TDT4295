@@ -1,5 +1,6 @@
 #include "widgets/canvas.h"
 #include "color.h"
+#include "framebuffer.h"
 #include "primitives/rectangle.h"
 #include "widgets/widget.h"
 #include <stdlib.h>
@@ -7,6 +8,8 @@
 
 static void canvas_render_callback(Widget *widget, Framebuffer *framebuffer);
 static void canvas_destroy_callback(Widget *widget);
+static void canvas_dirty_callback(Widget *widget, Framebuffer * framebuffer);
+static void expand_dirty_rect(CanvasData *data, int x, int y, int width, int height);
 
 Widget *canvas_create(int x, int y, int width, int height)
 {
@@ -42,13 +45,39 @@ Widget *canvas_create(int x, int y, int width, int height)
     data->brush_color = COLOR_BLACK;
     data->border_color = COLOR_BLACK;
     data->border_thickness = 2;
+    data->dirty_x = 0;
+    data->dirty_y = 0;
+    data->dirty_width = 0;
+    data->dirty_height = 0;
+    data->has_dirty_rect = 0;
 
     canvas->data = data;
 
     canvas->render = canvas_render_callback;
     canvas->destroy = canvas_destroy_callback;
+    canvas->on_dirty = canvas_dirty_callback;
 
     return canvas;
+}
+
+static void canvas_dirty_callback(Widget *widget, Framebuffer* framebuffer)
+{
+    if(!widget || !framebuffer)
+        return;
+
+    CanvasData *data = (CanvasData *)widget->data;
+    if (!data || !data->has_dirty_rect)
+        return;
+
+    if (framebuffer->dirty_rect_count < MAX_DIRTY_RECTS)
+    {
+        DirtyRect *rect = &framebuffer->dirty_rects[framebuffer->dirty_rect_count];
+        rect->x = widget->x + data->dirty_x;
+        rect->y = widget->y + data->dirty_y;
+        rect->width = data->dirty_width;
+        rect->height = data->dirty_height;
+        framebuffer->dirty_rect_count++;
+    }
 }
 
 static void canvas_render_callback(Widget *widget, Framebuffer *framebuffer)
@@ -80,6 +109,12 @@ static void canvas_render_callback(Widget *widget, Framebuffer *framebuffer)
         renderRectangle(widget->x, widget->y, widget->width, widget->height, data->border_color, data->border_thickness,
                         framebuffer);
     }
+
+    data->has_dirty_rect = 0;
+    data->dirty_x = 0;
+    data->dirty_y = 0;
+    data->dirty_width = 0;
+    data->dirty_height = 0;
 }
 
 static void canvas_destroy_callback(Widget *widget)
@@ -93,6 +128,40 @@ static void canvas_destroy_callback(Widget *widget)
     {
         free(data->pixels);
         data->pixels = NULL;
+    }
+}
+
+static void expand_dirty_rect(CanvasData *data, int x, int y, int width, int height)
+{
+    if (!data)
+        return;
+
+    if (!data->has_dirty_rect)
+    {
+        data->dirty_x = x;
+        data->dirty_y = y;
+        data->dirty_width = width;
+        data->dirty_height = height;
+        data->has_dirty_rect = 1;
+    }
+    else
+    {
+        int right = data->dirty_x + data->dirty_width;
+        int bottom = data->dirty_y + data->dirty_height;
+        int new_right = x + width;
+        int new_bottom = y + height;
+
+        if (x < data->dirty_x)
+            data->dirty_x = x;
+        if (y < data->dirty_y)
+            data->dirty_y = y;
+        if (new_right > right)
+            right = new_right;
+        if (new_bottom > bottom)
+            bottom = new_bottom;
+
+        data->dirty_width = right - data->dirty_x;
+        data->dirty_height = bottom - data->dirty_y;
     }
 }
 
@@ -164,6 +233,16 @@ void canvas_draw_at(Widget *canvas, int x, int y)
 
     int half_brush = data->brush_size / 2;
 
+    int min_x = canvas_x - half_brush;
+    int min_y = canvas_y - half_brush;
+    int max_x = canvas_x + half_brush;
+    int max_y = canvas_y + half_brush;
+
+    if (min_x < 0) min_x = 0;
+    if (min_y < 0) min_y = 0;
+    if (max_x >= canvas->width) max_x = canvas->width - 1;
+    if (max_y >= canvas->height) max_y = canvas->height - 1;
+
     for (int dy = -half_brush; dy <= half_brush; dy++)
     {
         for (int dx = -half_brush; dx <= half_brush; dx++)
@@ -178,6 +257,8 @@ void canvas_draw_at(Widget *canvas, int x, int y)
             }
         }
     }
+
+    expand_dirty_rect(data, min_x, min_y, max_x - min_x + 1, max_y - min_y + 1);
 
     widget_mark_dirty(canvas);
 }
@@ -196,6 +277,8 @@ void canvas_clear(Widget *canvas)
     {
         data->pixels[i] = 0;
     }
+
+    expand_dirty_rect(data, 0, 0, canvas->width, canvas->height);
 
     widget_mark_dirty(canvas);
 }
