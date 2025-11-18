@@ -13,7 +13,8 @@ typedef enum
 {
     GAME_STATE_PLAYING,
     GAME_STATE_WAITING_FOR_GUESS,
-    GAME_STATE_RESULT
+    GAME_STATE_RESULT,
+    GAME_STATE_MENU
 } GameState;
 
 typedef struct
@@ -65,5 +66,6 @@ unsigned int game_get_score(void);
 void game_on_guess_click(Widget *widget, void *user_data);
 void game_on_clear_canvas_click(Widget *widget, void *user_data);
 void game_on_retry_click(Widget *widget, void *user_data);
+void game_on_play_click(Widget *widget, void *user_data);
 
 #endif

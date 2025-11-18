@@ -1,5 +1,6 @@
-#include "widgets/widget.h"
 #include "framebuffer.h"
+#include "widgets/container.h"
+#include "widgets/widget.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -49,8 +50,10 @@ void widget_render(Widget *widget, Framebuffer *framebuffer)
     if (!widget || !framebuffer)
         return;
 
-    if (!widget->visible || !widget->dirty)
+    if (!widget->visible || !widget->dirty) {
+        widget->dirty = false;
         return;
+    }
 
     if (widget->render)
     {
@@ -64,14 +67,17 @@ void widget_render(Widget *widget, Framebuffer *framebuffer)
     widget->prev_height = widget->height;
 }
 
-void widget_handle_dirty(Widget* widget, Framebuffer * framebuffer)
+void widget_handle_dirty(Widget *widget, Framebuffer *framebuffer)
 {
     if (!widget || !widget->dirty)
         return;
 
-    if (widget->on_dirty) {
+    if (widget->on_dirty)
+    {
         widget->on_dirty(widget, framebuffer);
-    }else {
+    }
+    else
+    {
         DirtyRect prev_geometry = (DirtyRect){widget->prev_x, widget->prev_y, widget->prev_width, widget->prev_height};
 
         framebuffer->dirty_rects[framebuffer->dirty_rect_count] = prev_geometry;
@@ -112,6 +118,21 @@ void widget_set_visible(Widget *widget, bool visible)
 
     if (widget->visible == visible)
         return;
+
+    if (widget->type == WIDGET_TYPE_CONTAINER)
+    {
+        ContainerData *data = (ContainerData *)widget->data;
+        if (data)
+        {
+            for (int i = 0; i < data->child_count; i++)
+            {
+                if (data->children[i])
+                {
+                    widget_set_visible(data->children[i], visible);
+                }
+            }
+        }
+    }
 
     widget->visible = visible;
     widget_mark_dirty(widget);
@@ -155,6 +176,21 @@ void widget_handle_click(Widget *widget, int x, int y)
         if (widget->on_click)
         {
             widget->on_click(widget, widget->user_data);
+        }
+
+        if (widget->type == WIDGET_TYPE_CONTAINER)
+        {
+            ContainerData *data = (ContainerData *)widget->data;
+            if (data)
+            {
+                for (int i = 0; i < data->child_count; i++)
+                {
+                    if (data->children[i])
+                    {
+                        widget_handle_click(data->children[i], x, y);
+                    }
+                }
+            }
         }
     }
 }

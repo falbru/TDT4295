@@ -53,7 +53,10 @@ static struct
     bool initialized;
     unsigned int score;
 
-    Widget *root_container;
+    Widget *top_container;
+    Widget *menu_container;
+    Widget *game_container;
+
     Widget *button_container;
     Widget *label_prompt;
     Widget *label_result;
@@ -61,6 +64,9 @@ static struct
     Widget *canvas;
     Widget *skidaddle;
     Widget *button_clear;
+
+    Widget *label_title;
+    Widget *button_play;
 } g_game = {0};
 
 bool game_init(const GameConfig *config)
@@ -79,7 +85,7 @@ bool game_init(const GameConfig *config)
     g_game.num_prompts = config->num_prompts;
     g_game.guess_callback = config->guess_callback;
     g_game.callback_user_data = config->callback_user_data;
-    g_game.state = GAME_STATE_PLAYING;
+    g_game.state = GAME_STATE_MENU;
     g_game.needs_redraw = true;
     g_game.is_drawing = false;
 
@@ -89,13 +95,59 @@ bool game_init(const GameConfig *config)
     unsigned int canvas_width = config->canvas_width > 0 ? config->canvas_width : DEFAULT_CANVAS_WIDTH;
     unsigned int canvas_height = config->canvas_height > 0 ? config->canvas_height : DEFAULT_CANVAS_HEIGHT;
 
-    g_game.root_container = vbox_create(0, 0, config->window_width, config->window_height);
-    if (!g_game.root_container)
+    // Create top-level container
+    g_game.top_container = container_create(0, 0, config->window_width, config->window_height, LAYOUT_TYPE_NONE);
+    if (!g_game.top_container)
     {
         return false;
     }
-    container_set_padding(g_game.root_container, SPACING_LG);
-    container_set_spacing(g_game.root_container, SPACING_XL);
+
+    // Create menu container
+    g_game.menu_container = vbox_create(0, 0, config->window_width, config->window_height);
+    if (!g_game.menu_container)
+    {
+        game_cleanup();
+        return false;
+    }
+    container_set_padding(g_game.menu_container, SPACING_LG);
+    container_set_spacing(g_game.menu_container, SPACING_XL);
+    container_set_alignment(g_game.menu_container, ALIGN_CENTER);
+    container_set_justify(g_game.menu_container, ALIGN_CENTER);
+    container_add_child(g_game.top_container, g_game.menu_container);
+
+    g_game.label_title = label_create_auto(0, 0, "Skidaddle", label_font);
+    if (!g_game.label_title)
+    {
+        game_cleanup();
+        return false;
+    }
+    label_set_color(g_game.label_title, COLOR_BLACK);
+    container_add_child(g_game.menu_container, g_game.label_title);
+
+    g_game.button_play = button_create_auto(0, 0, "Play", button_font);
+    if (!g_game.button_play)
+    {
+        game_cleanup();
+        return false;
+    }
+    button_set_background_color(g_game.button_play, COLOR_WHITE);
+    button_set_text_color(g_game.button_play, COLOR_BLACK);
+    button_set_border(g_game.button_play, COLOR_BLACK, 2);
+    button_set_on_click(g_game.button_play, game_on_play_click, NULL);
+    container_add_child(g_game.menu_container, g_game.button_play);
+
+    // Create game container
+    g_game.game_container = vbox_create(0, 0, config->window_width, config->window_height);
+    if (!g_game.game_container)
+    {
+        game_cleanup();
+        return false;
+    }
+    container_set_padding(g_game.game_container, SPACING_LG);
+    container_set_spacing(g_game.game_container, SPACING_XL);
+    container_set_alignment(g_game.game_container, ALIGN_CENTER);
+    widget_set_visible(g_game.game_container, false);
+    container_add_child(g_game.top_container, g_game.game_container);
 
     g_game.label_prompt = label_create_auto(0, 0, "Draw: ", label_font);
     if (!g_game.label_prompt)
@@ -104,7 +156,7 @@ bool game_init(const GameConfig *config)
         return false;
     }
     label_set_color(g_game.label_prompt, COLOR_BLACK);
-    container_add_child(g_game.root_container, g_game.label_prompt);
+    container_add_child(g_game.game_container, g_game.label_prompt);
 
     g_game.canvas = canvas_create(0, 0, canvas_width, canvas_height);
     if (!g_game.canvas)
@@ -116,7 +168,7 @@ bool game_init(const GameConfig *config)
     canvas_set_brush_color(g_game.canvas, COLOR_BLACK);
     canvas_set_background_color(g_game.canvas, COLOR_BLACK);
     canvas_set_border(g_game.canvas, COLOR_BLACK, 1);
-    container_add_child(g_game.root_container, g_game.canvas);
+    container_add_child(g_game.game_container, g_game.canvas);
 
     g_game.button_container = hbox_create(0, 0, config->window_width, 40);
     if (!g_game.button_container)
@@ -134,9 +186,7 @@ bool game_init(const GameConfig *config)
         return false;
     }
     label_set_color(g_game.label_result, COLOR_BLACK);
-    container_add_child(g_game.root_container, g_game.label_result);
-
-    container_set_alignment(g_game.root_container, ALIGN_CENTER);
+    container_add_child(g_game.game_container, g_game.label_result);
 
     g_game.button_retry = button_create_auto(0, 0, "Play again", button_font);
     if (!g_game.button_retry)
@@ -150,22 +200,20 @@ bool game_init(const GameConfig *config)
     button_set_on_click(g_game.button_retry, game_on_retry_click, NULL);
     widget_set_visible(g_game.button_retry, false);
     container_add_child(g_game.button_container, g_game.button_retry);
-    container_add_child(g_game.root_container, g_game.button_container);
+    container_add_child(g_game.game_container, g_game.button_container);
 
     g_game.initialized = true;
-
-    game_start_new_round();
 
     return true;
 }
 
 void game_cleanup(void)
 {
-    if (g_game.root_container)
+    if (g_game.top_container)
     {
-        widget_destroy(g_game.root_container);
-        free(g_game.root_container);
-        g_game.root_container = NULL;
+        widget_destroy(g_game.top_container);
+        free(g_game.top_container);
+        g_game.top_container = NULL;
     }
 
     memset(&g_game, 0, sizeof(g_game));
@@ -185,7 +233,7 @@ void game_start_new_round(void)
     str_concat(prompt_text, sizeof(prompt_text), g_game.drawing_prompts[g_game.current_prompt_index]);
     label_set_text(g_game.label_prompt, prompt_text);
     label_auto_size(g_game.label_prompt);
-    container_update_layout(g_game.root_container);
+    container_update_layout(g_game.game_container);
 
     widget_set_visible(g_game.label_prompt, true);
     widget_set_visible(g_game.label_result, false);
@@ -237,22 +285,18 @@ bool game_render(Framebuffer *framebuffer)
         return false;
 
     static bool first = true;
-    if (g_game.needs_redraw)
-    {
         if (first) framebuffer_clear(framebuffer, BACKGROUND_COLOR);
         first = false;
 
-        widget_handle_dirty(g_game.root_container, framebuffer);
+        widget_handle_dirty(g_game.top_container, framebuffer);
+
         framebuffer_clear_dirty_rects(framebuffer, BACKGROUND_COLOR);
 
-        widget_render(g_game.root_container, framebuffer);
+        widget_render(g_game.top_container, framebuffer);
 
         g_game.needs_redraw = false;
 
         return true;
-    }
-
-    return false;
 }
 
 bool game_needs_redraw(void)
@@ -270,6 +314,13 @@ bool game_handle_mouse_down(unsigned int x, unsigned int y)
     if (!g_game.initialized)
         return false;
 
+    if (g_game.state == GAME_STATE_MENU)
+    {
+        widget_handle_click(g_game.menu_container, x, y);
+        g_game.needs_redraw = true;
+        return true;
+    }
+
     if (g_game.state == GAME_STATE_PLAYING && widget_contains_point(g_game.canvas, x, y))
     {
         g_game.is_drawing = true;
@@ -278,7 +329,8 @@ bool game_handle_mouse_down(unsigned int x, unsigned int y)
         return true;
     }
 
-    widget_handle_click(g_game.button_retry, x, y);
+    widget_handle_click(g_game.game_container, x, y);
+    g_game.needs_redraw = true;
 
     return false;
 }
@@ -417,5 +469,15 @@ void game_on_clear_canvas_click(Widget *widget, void *user_data)
 
 void game_on_retry_click(Widget *widget, void *user_data)
 {
+    game_start_new_round();
+}
+
+void game_on_play_click(Widget *widget, void *user_data)
+{
+    // Hide menu, show game screen
+    widget_set_visible(g_game.menu_container, false);
+    widget_set_visible(g_game.game_container, true);
+
+    // Start a new round
     game_start_new_round();
 }

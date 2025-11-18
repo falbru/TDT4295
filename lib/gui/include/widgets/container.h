@@ -5,6 +5,7 @@
 
 typedef enum
 {
+    LAYOUT_TYPE_NONE,
     LAYOUT_TYPE_HBOX,
     LAYOUT_TYPE_VBOX,
     LAYOUT_TYPE_GRID,
