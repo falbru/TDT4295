@@ -10,10 +10,10 @@ void renderFilledRectangle(int x, int y, int width, int height, Color color, Fra
 
     int x_start = x < 0 ? 0 : x;
     int y_start = y < 0 ? 0 : y;
-    int x_end = (x + width > framebuffer->width) ? framebuffer->width : x + width;
-    int y_end = (y + height > framebuffer->height) ? framebuffer->height : y + height;
+    int x_end = (x + width > FRAMEBUFFER_WIDTH(framebuffer)) ? FRAMEBUFFER_WIDTH(framebuffer) : x + width;
+    int y_end = (y + height > FRAMEBUFFER_HEIGHT(framebuffer)) ? FRAMEBUFFER_HEIGHT(framebuffer) : y + height;
 
-    if (x_start >= framebuffer->width || y_start >= framebuffer->height || x_end <= 0 || y_end <= 0)
+    if (x_start >= FRAMEBUFFER_WIDTH(framebuffer) || y_start >= FRAMEBUFFER_HEIGHT(framebuffer) || x_end <= 0 || y_end <= 0)
         return;
 
     for (int row = y_start; row < y_end; row++)

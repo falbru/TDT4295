@@ -4,12 +4,12 @@ void renderImage(int x, int y, const Image *image, Framebuffer *framebuffer)
 {
     for (int row = 0; row < image->height; row++)
     {
-        if (y + row < 0 || y + row >= framebuffer->height)
+        if (y + row < 0 || y + row >= FRAMEBUFFER_HEIGHT(framebuffer))
             continue;
 
         for (int col = 0; col < image->width; col++)
         {
-            if (x + col < 0 || x + col >= framebuffer->width)
+            if (x + col < 0 || x + col >= FRAMEBUFFER_WIDTH(framebuffer))
                 continue;
 
             int src_idx = (row * image->width + col);

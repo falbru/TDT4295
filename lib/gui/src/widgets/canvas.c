@@ -95,7 +95,7 @@ static void canvas_render_callback(Widget *widget, Framebuffer *framebuffer)
             int fb_x = widget->x + col;
             int fb_y = widget->y + row;
 
-            if (fb_x >= 0 && fb_x < framebuffer->width && fb_y >= 0 && fb_y < framebuffer->height)
+            if (fb_x >= 0 && fb_x < FRAMEBUFFER_WIDTH(framebuffer) && fb_y >= 0 && fb_y < FRAMEBUFFER_HEIGHT(framebuffer))
             {
                 Color c = COLOR_WHITE;
                 if (data->pixels[canvas_idx] > 0) c= COLOR_BLACK;

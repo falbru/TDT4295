@@ -32,7 +32,7 @@ void renderText(const char *text, Color color, int x, int y, const bdf_font_t *f
             unsigned int row_data = ch->bitmap[row];
             int pixel_y = y + row;
 
-            if (pixel_y < 0 || pixel_y >= framebuffer->height)
+            if (pixel_y < 0 || pixel_y >= FRAMEBUFFER_HEIGHT(framebuffer))
                 continue;
 
             for (int col = 0; col < ch->bbx_width; col++)
@@ -41,7 +41,7 @@ void renderText(const char *text, Color color, int x, int y, const bdf_font_t *f
                 {
                     int pixel_x = x_pos + ch->bbx_xoff + col;
 
-                    if (pixel_x < 0 || pixel_x >= framebuffer->width)
+                    if (pixel_x < 0 || pixel_x >= FRAMEBUFFER_WIDTH(framebuffer))
                         continue;
 
                     FRAMEBUFFER_SET_PIXEL(framebuffer, pixel_x, pixel_y, color);
