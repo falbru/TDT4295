@@ -13,9 +13,10 @@ void renderImage(int x, int y, const Image *image, Framebuffer *framebuffer)
                 continue;
 
             int src_idx = (row * image->width + col);
-            int dst_idx = ((y + row) * framebuffer->width + (x + col));
+            int pixel_x = x + col;
+            int pixel_y = y + row;
 
-            framebuffer->pixels[dst_idx] = image->data[src_idx];
+            FRAMEBUFFER_SET_PIXEL(framebuffer, pixel_x, pixel_y, image->data[src_idx]);
         }
     }
 }

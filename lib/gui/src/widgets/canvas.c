@@ -66,8 +66,7 @@ static void canvas_render_callback(Widget *widget, Framebuffer *framebuffer)
 
             if (fb_x >= 0 && fb_x < framebuffer->width && fb_y >= 0 && fb_y < framebuffer->height)
             {
-                int fb_idx = fb_y * framebuffer->width + fb_x;
-                framebuffer->pixels[fb_idx] = data->pixels[canvas_idx];
+                FRAMEBUFFER_SET_PIXEL(framebuffer, fb_x, fb_y, data->pixels[canvas_idx]);
             }
         }
     }

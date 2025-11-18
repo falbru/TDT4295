@@ -44,7 +44,7 @@ void renderText(const char *text, Color color, int x, int y, const bdf_font_t *f
                     if (pixel_x < 0 || pixel_x >= framebuffer->width)
                         continue;
 
-                    framebuffer->pixels[pixel_y * framebuffer->width + pixel_x] = color;
+                    FRAMEBUFFER_SET_PIXEL(framebuffer, pixel_x, pixel_y, color);
                 }
             }
         }

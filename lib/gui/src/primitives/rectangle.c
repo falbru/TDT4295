@@ -20,7 +20,7 @@ void renderFilledRectangle(int x, int y, int width, int height, Color color, Fra
     {
         for (int col = x_start; col < x_end; col++)
         {
-            framebuffer->pixels[row * framebuffer->width + col] = color;
+            FRAMEBUFFER_SET_PIXEL(framebuffer, col, row, color);
         }
     }
 }
