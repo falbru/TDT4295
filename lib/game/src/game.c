@@ -159,9 +159,9 @@ bool game_init(const GameConfig *config)
         game_cleanup();
         return false;
     }
-    button_set_background_color(g_game.button_play, COLOR_WHITE);
-    button_set_text_color(g_game.button_play, COLOR_BLACK);
-    button_set_border(g_game.button_play, COLOR_BLACK, 2);
+    button_set_background_color(g_game.button_play, COLOR_RGB(46, 170, 80));
+    button_set_text_color(g_game.button_play, COLOR_WHITE);
+    button_set_border(g_game.button_play, COLOR_RGB(35, 118, 54), 1);
     button_set_on_click(g_game.button_play, game_on_play_click, NULL);
     container_add_child(g_game.menu_container, g_game.button_play);
 
