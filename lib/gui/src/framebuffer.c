@@ -15,7 +15,8 @@ void framebuffer_clear_dirty_rects(Framebuffer *framebuffer, Color clear_color)
 
         for (int y = rect.y; y < rect.y + rect.height; y++) {
             for (int x = rect.x; x < rect.x + rect.width; x++) {
-                FRAMEBUFFER_SET_PIXEL(framebuffer, x, y, clear_color);
+                if (x >= 0 && y >= 0 && x < framebuffer->width && y < framebuffer->height)
+                    FRAMEBUFFER_SET_PIXEL(framebuffer, x, y, clear_color);
             }
         }
     }

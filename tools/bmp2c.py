@@ -4,7 +4,7 @@ import sys
 from PIL import Image
 
 def bitmap_to_c_header(image_path):
-    img = Image.open(image_path).convert('L')
+    img = Image.open(image_path).convert('RGBA')
     width, height = img.size
     pixels = list(img.getdata())
 
@@ -13,25 +13,33 @@ def bitmap_to_c_header(image_path):
     print(f"#ifndef {header_name}_H")
     print(f"#define {header_name}_H")
     print()
-    print("#include <stdint.h>")
+    print('#include "color.h"')
+    print('#include "primitives/image.h"')
     print()
     print(f"#define {header_name}_WIDTH {width}")
     print(f"#define {header_name}_HEIGHT {height}")
     print()
-    print(f"const uint8_t {header_name.lower()}_data[] = {{")
+    print(f"const Color {header_name.lower()}_data[] = {{")
 
     for i, pixel in enumerate(pixels):
-        if i % 16 == 0:
+        r, g, b, a = pixel
+        if i % 4 == 0:
             print("    ", end="")
-        print(f"0x{pixel:02X}", end="")
+        print(f"{{0x{a:02X}, 0x{r:02X}, 0x{g:02X}, 0x{b:02X}}}", end="")
         if i < len(pixels) - 1:
             print(", ", end="")
-        if (i + 1) % 16 == 0:
+        if (i + 1) % 4 == 0:
             print()
 
-    if len(pixels) % 16 != 0:
+    if len(pixels) % 4 != 0:
         print()
 
+    print("};")
+    print()
+    print(f"const Image {header_name.lower()}_image = {{")
+    print(f"    .data = {header_name.lower()}_data,")
+    print(f"    .width = {header_name}_WIDTH,")
+    print(f"    .height = {header_name}_HEIGHT")
     print("};")
     print()
     print(f"#endif // {header_name}_H")

@@ -2,10 +2,12 @@
 #include "color.h"
 #include "font_medium.h"
 #include "framebuffer.h"
+#include "skidaddle.h"
 #include "widgets/button.h"
 #include "widgets/canvas.h"
 #include "widgets/container.h"
 #include "widgets/hbox.h"
+#include "widgets/image_widget.h"
 #include "widgets/label.h"
 #include "widgets/vbox.h"
 #include "widgets/widget.h"
@@ -21,6 +23,8 @@
 #define SPACING_MD 4
 #define SPACING_LG 8
 #define SPACING_XL 16
+
+#define BACKGROUND_COLOR COLOR_RGB(255, 209, 57)
 
 static void str_concat(char *dest, size_t dest_size, const char *src)
 {
@@ -54,6 +58,7 @@ static struct
     Widget *label_prompt;
     Widget *label_result;
     Widget *canvas;
+    Widget *skidaddle;
     Widget *button_clear;
 } g_game = {0};
 
@@ -91,13 +96,16 @@ bool game_init(const GameConfig *config)
     container_set_padding(g_game.root_container, SPACING_LG);
     container_set_spacing(g_game.root_container, SPACING_XL);
 
+    g_game.skidaddle = image_widget_create(0, 0, &skidaddle_image);
+    container_add_child(g_game.root_container, g_game.skidaddle);
+
     g_game.label_prompt = label_create_auto(0, 0, "Draw: ", label_font);
     if (!g_game.label_prompt)
     {
         game_cleanup();
         return false;
     }
-    label_set_color(g_game.label_prompt, COLOR_WHITE);
+    label_set_color(g_game.label_prompt, COLOR_BLACK);
     container_add_child(g_game.root_container, g_game.label_prompt);
 
     g_game.canvas = canvas_create(0, 0, canvas_width, canvas_height);
@@ -108,8 +116,8 @@ bool game_init(const GameConfig *config)
     }
     canvas_set_brush_size(g_game.canvas, 7);
     canvas_set_brush_color(g_game.canvas, COLOR_BLACK);
-    canvas_set_background_color(g_game.canvas, COLOR_WHITE);
-    canvas_set_border(g_game.canvas, COLOR_WHITE, 2);
+    canvas_set_background_color(g_game.canvas, COLOR_BLACK);
+    canvas_set_border(g_game.canvas, COLOR_BLACK, 1);
     container_add_child(g_game.root_container, g_game.canvas);
 
     g_game.button_container = hbox_create(0, 0, config->window_width, 40);
@@ -141,7 +149,7 @@ bool game_init(const GameConfig *config)
         game_cleanup();
         return false;
     }
-    label_set_color(g_game.label_result, COLOR_WHITE);
+    label_set_color(g_game.label_result, COLOR_BLACK);
     container_add_child(g_game.root_container, g_game.label_result);
 
     container_set_alignment(g_game.root_container, ALIGN_CENTER);
@@ -211,19 +219,7 @@ void game_send_guess(int guess_index)
 
     char result_text[256];
     result_text[0] = '\0';
-    if (correct)
-    {
-        str_concat(result_text, sizeof(result_text), "Correct! I guessed: ");
-        str_concat(result_text, sizeof(result_text), guess);
-    }
-    else
-    {
-        str_concat(result_text, sizeof(result_text), "Wrong! I guessed: ");
-        str_concat(result_text, sizeof(result_text), guess);
-        str_concat(result_text, sizeof(result_text), " (was: ");
-        str_concat(result_text, sizeof(result_text), g_game.drawing_prompts[g_game.current_prompt_index]);
-        str_concat(result_text, sizeof(result_text), ")");
-    }
+    str_concat(result_text, sizeof(result_text), guess);
 
     label_set_text(g_game.label_result, result_text);
     label_auto_size(g_game.label_result);
@@ -245,11 +241,11 @@ bool game_render(Framebuffer *framebuffer)
     static bool first = true;
     if (g_game.needs_redraw)
     {
-        if (first) framebuffer_clear(framebuffer, COLOR_RGB(50, 50, 50));
+        if (first) framebuffer_clear(framebuffer, BACKGROUND_COLOR);
         first = false;
 
         widget_handle_dirty(g_game.root_container, framebuffer);
-        framebuffer_clear_dirty_rects(framebuffer, COLOR_RGB(50, 50, 50));
+        framebuffer_clear_dirty_rects(framebuffer, BACKGROUND_COLOR);
 
         widget_render(g_game.root_container, framebuffer);
 

@@ -14,6 +14,7 @@ add_library(gui
     src/widgets/hbox.c
     src/widgets/vbox.c
     src/widgets/grid.c
+    src/widgets/image_widget.c
 )
 
 target_include_directories(gui PUBLIC include/)
