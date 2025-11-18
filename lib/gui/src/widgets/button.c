@@ -93,6 +93,7 @@ void button_set_text(Widget *button, const char *text)
     }
 
     data->text = text ? strdup(text) : NULL;
+    widget_mark_dirty(button);
 }
 
 void button_set_padding(Widget *button, int padding)
@@ -104,10 +105,11 @@ void button_set_padding(Widget *button, int padding)
     if (!data)
         return;
 
-    if (data->padding != padding) {
-        widget_mark_dirty(button);
-    }
+    if (data->padding == padding)
+        return;
+
     data->padding = padding;
+    widget_mark_dirty(button);
 }
 
 void button_set_background_color(Widget *button, Color color)
@@ -119,10 +121,11 @@ void button_set_background_color(Widget *button, Color color)
     if (!data)
         return;
 
-    if (!COLOR_COMPARE(data->background_color, color)) {
-        widget_mark_dirty(button);
-    }
+    if (COLOR_COMPARE(data->background_color, color))
+        return;
+
     data->background_color = color;
+    widget_mark_dirty(button);
 }
 
 void button_set_text_color(Widget *button, Color color)
@@ -134,10 +137,11 @@ void button_set_text_color(Widget *button, Color color)
     if (!data)
         return;
 
-    if (!COLOR_COMPARE(data->text_color, color)) {
-        widget_mark_dirty(button);
-    }
+    if (COLOR_COMPARE(data->text_color, color))
+        return;
+
     data->text_color = color;
+    widget_mark_dirty(button);
 }
 
 void button_set_border(Widget *button, Color color, int thickness)
@@ -149,11 +153,11 @@ void button_set_border(Widget *button, Color color, int thickness)
     if (!data)
         return;
 
-    if (!COLOR_COMPARE(data->text_color, color) || data->border_thickness != thickness) {
-        widget_mark_dirty(button);
-    }
+    if (COLOR_COMPARE(data->text_color, color) && data->border_thickness == thickness) return;
+
     data->border_color = color;
     data->border_thickness = thickness;
+    widget_mark_dirty(button);
 }
 
 void button_set_font(Widget *button, const bdf_font_t *font)
@@ -207,6 +211,8 @@ void button_auto_size(Widget *button)
 
     button->width = text_width + total_padding + total_border;
     button->height = text_height + total_padding + total_border;
+
+    widget_mark_dirty(button);
 }
 
 Widget *button_create_auto(int x, int y, const char *text, const bdf_font_t *font)

@@ -245,11 +245,12 @@ bool game_render(Framebuffer *framebuffer)
         if (first) framebuffer_clear(framebuffer, COLOR_RGB(50, 50, 50));
         first = false;
 
+        widget_handle_dirty(g_game.root_container, framebuffer);
+        framebuffer_clear_dirty_rects(framebuffer, COLOR_RGB(50, 50, 50));
+
         widget_render(g_game.root_container, framebuffer);
 
         g_game.needs_redraw = false;
-
-        framebuffer_clear_dirty_rects(framebuffer, COLOR_RGB(50, 50, 50));
 
         return true;
     }

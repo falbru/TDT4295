@@ -3,7 +3,6 @@
 #include "framebuffer.h"
 #include "primitives/text.h"
 #include "widgets/widget.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -44,13 +43,6 @@ static void label_render_callback(Widget *widget, Framebuffer *framebuffer)
 
     LabelData *data = (LabelData *)widget->data;
 
-    for (int y = widget->prev_y - 5; y < widget->prev_y + widget->prev_height; y++) {
-        for (int i = widget->prev_x; i < widget->prev_x + widget->prev_width; i++) {
-            if (y >= 0)
-            FRAMEBUFFER_SET_PIXEL(framebuffer, i, y, COLOR_RGB(50, 50, 50));
-        }
-    }
-
     if (data->text && data->font)
     {
         renderText(data->text, data->text_color, widget->x, widget->y, data->font, framebuffer);
@@ -86,6 +78,7 @@ void label_set_text(Widget *label, const char *text)
     }
 
     data->text = text ? strdup(text) : NULL;
+    label_auto_size(label);
     widget_mark_dirty(label);
 }
 
@@ -99,6 +92,7 @@ void label_set_color(Widget *label, Color color)
         return;
 
     data->text_color = color;
+    widget_mark_dirty(label);
 }
 
 void label_set_font(Widget *label, const bdf_font_t *font)
@@ -111,6 +105,7 @@ void label_set_font(Widget *label, const bdf_font_t *font)
         return;
 
     data->font = font;
+    widget_mark_dirty(label);
 }
 
 const char *label_get_text(Widget *label)
@@ -139,6 +134,8 @@ void label_auto_size(Widget *label)
 
     label->width = text_width;
     label->height = text_height;
+
+    widget_mark_dirty(label);
 }
 
 Widget *label_create_auto(int x, int y, const char *text, const bdf_font_t *font)

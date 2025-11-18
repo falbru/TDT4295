@@ -19,6 +19,7 @@ typedef enum
 typedef void (*WidgetClickCallback)(struct Widget *widget, void *user_data);
 typedef void (*WidgetRenderCallback)(struct Widget *widget, Framebuffer *framebuffer);
 typedef void (*WidgetDestroyCallback)(struct Widget *widget);
+typedef void (*WidgetDirtyCallback)(struct Widget *widget, Framebuffer *framebuffer);
 
 typedef struct Widget
 {
@@ -37,6 +38,7 @@ typedef struct Widget
     int prev_y;
     int prev_width;
     int prev_height;
+    WidgetDirtyCallback on_dirty;
 
 
     struct Widget *parent;
@@ -59,6 +61,7 @@ void widget_set_size(Widget *widget, int width, int height);
 void widget_set_visible(Widget *widget, bool visible);
 void widget_set_enabled(Widget *widget, bool enabled);
 void widget_mark_dirty(Widget *widget);
+void widget_handle_dirty(Widget *widget, Framebuffer* framebuffer);
 
 bool widget_contains_point(Widget *widget, int x, int y);
 void widget_handle_click(Widget *widget, int x, int y);

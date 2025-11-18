@@ -1,8 +1,10 @@
 #include "widgets/container.h"
+#include "widgets/widget.h"
 #include <stdlib.h>
 #include <string.h>
 
 static void container_render_callback(Widget *widget, Framebuffer *framebuffer);
+static void container_dirty_callback(Widget *widget, Framebuffer *framebuffer);
 static void container_destroy_callback(Widget *widget);
 static void update_hbox_layout(Widget *container);
 static void update_vbox_layout(Widget *container);
@@ -15,6 +17,7 @@ Widget *container_create(int x, int y, int width, int height, LayoutType layout_
         return NULL;
 
     widget_init(container, WIDGET_TYPE_CONTAINER, x, y, width, height);
+    container->on_dirty = container_dirty_callback;
 
     ContainerData *data = (ContainerData *)malloc(sizeof(ContainerData));
     if (!data)
@@ -61,6 +64,24 @@ static void container_render_callback(Widget *widget, Framebuffer *framebuffer)
             widget_render(data->children[i], framebuffer);
         }
     }
+}
+
+static void container_dirty_callback(Widget *widget, Framebuffer *framebuffer)
+{
+    if (!widget || !widget->dirty)
+        return;
+
+    ContainerData *data = (ContainerData *)widget->data;
+
+    for (int i = 0; i < data->child_count; i++)
+    {
+        if (data->children[i])
+        {
+            widget_handle_dirty(data->children[i], framebuffer);
+        }
+    }
+
+    container_update_layout(widget);
 }
 
 static void container_destroy_callback(Widget *widget)

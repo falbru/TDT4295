@@ -30,7 +30,7 @@ void renderText(const char *text, Color color, int x, int y, const bdf_font_t *f
         for (int row = 0; row < ch->bbx_height; row++)
         {
             unsigned int row_data = ch->bitmap[row];
-            int pixel_y = y + ch->bbx_yoff + row;
+            int pixel_y = y + row;
 
             if (pixel_y < 0 || pixel_y >= framebuffer->height)
                 continue;
@@ -80,7 +80,7 @@ int getFontHeight(const bdf_font_t *font)
     int max_height = 0;
     for (int i = 0; i < font->char_count; i++)
     {
-        int char_height = font->chars[i].bbx_height + font->chars[i].bbx_yoff;
+        int char_height = font->chars[i].bbx_height;
         if (char_height > max_height)
         {
             max_height = char_height;

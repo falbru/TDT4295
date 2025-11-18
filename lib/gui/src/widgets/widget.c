@@ -1,6 +1,5 @@
 #include "widgets/widget.h"
-#include "widgets/container.h"
-#include <stdio.h>
+#include "framebuffer.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +24,7 @@ void widget_init(Widget *widget, WidgetType type, int x, int y, int width, int h
     widget->user_data = NULL;
     widget->data = NULL;
     widget->dirty = true;
+    widget->on_dirty = NULL;
 }
 
 void widget_destroy(Widget *widget)
@@ -49,11 +49,6 @@ void widget_render(Widget *widget, Framebuffer *framebuffer)
     if (!widget || !framebuffer)
         return;
 
-    if (!widget->visible && widget->dirty) {
-        framebuffer->dirty_rects[framebuffer->dirty_rect_count] = (DirtyRect){widget->prev_x, widget->prev_y, widget->prev_width, widget->prev_height};
-        framebuffer->dirty_rect_count++;
-    }
-
     if (!widget->visible || !widget->dirty)
         return;
 
@@ -69,25 +64,45 @@ void widget_render(Widget *widget, Framebuffer *framebuffer)
     widget->prev_height = widget->height;
 }
 
+void widget_handle_dirty(Widget* widget, Framebuffer * framebuffer)
+{
+    if (!widget || !widget->dirty)
+        return;
+
+    if (widget->on_dirty) {
+        widget->on_dirty(widget, framebuffer);
+    }else {
+        DirtyRect prev_geometry = (DirtyRect){widget->prev_x, widget->prev_y, widget->prev_width, widget->prev_height};
+
+        framebuffer->dirty_rects[framebuffer->dirty_rect_count] = prev_geometry;
+        framebuffer->dirty_rect_count++;
+    }
+}
+
 void widget_set_position(Widget *widget, int x, int y)
 {
     if (!widget)
         return;
+
+    if (widget->x == x && widget->y == y)
+        return;
+
     widget->x = x;
     widget->y = y;
+    widget_mark_dirty(widget);
 }
 
 void widget_set_size(Widget *widget, int width, int height)
 {
     if (!widget)
         return;
+
+    if (widget->width == width && widget->height == height)
+        return;
+
     widget->width = width;
     widget->height = height;
-
-    if (widget->type == WIDGET_TYPE_CONTAINER)
-    {
-        container_update_layout(widget);
-    }
+    widget_mark_dirty(widget);
 }
 
 void widget_set_visible(Widget *widget, bool visible)
@@ -100,11 +115,6 @@ void widget_set_visible(Widget *widget, bool visible)
 
     widget->visible = visible;
     widget_mark_dirty(widget);
-
-    if (widget->parent && widget->parent->type == WIDGET_TYPE_CONTAINER)
-    {
-        container_update_layout(widget->parent);
-    }
 }
 
 void widget_set_enabled(Widget *widget, bool enabled)
@@ -118,8 +128,10 @@ void widget_mark_dirty(Widget *widget)
 {
     if (!widget)
         return;
+
     if (widget->parent)
         widget_mark_dirty(widget->parent);
+
     widget->dirty = true;
 }
 
