@@ -66,6 +66,21 @@ static void canvas_dirty_callback(Widget *widget, Framebuffer* framebuffer)
         return;
 
     CanvasData *data = (CanvasData *)widget->data;
+
+    if (!widget->visible)
+    {
+        if (framebuffer->dirty_rect_count < MAX_DIRTY_RECTS)
+        {
+            DirtyRect *rect = &framebuffer->dirty_rects[framebuffer->dirty_rect_count];
+            rect->x = widget->x;
+            rect->y = widget->y;
+            rect->width = widget->width;
+            rect->height = widget->height;
+            framebuffer->dirty_rect_count++;
+        }
+        return;
+    }
+
     if (!data || !data->has_dirty_rect)
         return;
 

@@ -77,6 +77,8 @@ static void container_dirty_callback(Widget *widget, Framebuffer *framebuffer)
 
     ContainerData *data = (ContainerData *)widget->data;
 
+    container_update_layout(widget);
+
     for (int i = 0; i < data->child_count; i++)
     {
         if (data->children[i])
@@ -84,8 +86,6 @@ static void container_dirty_callback(Widget *widget, Framebuffer *framebuffer)
             widget_handle_dirty(data->children[i], framebuffer);
         }
     }
-
-    container_update_layout(widget);
 }
 
 static void container_destroy_callback(Widget *widget)

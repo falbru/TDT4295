@@ -153,7 +153,7 @@ void button_set_border(Widget *button, Color color, int thickness)
     if (!data)
         return;
 
-    if (COLOR_COMPARE(data->text_color, color) && data->border_thickness == thickness) return;
+    if (COLOR_COMPARE(data->border_color, color) && data->border_thickness == thickness) return;
 
     data->border_color = color;
     data->border_thickness = thickness;

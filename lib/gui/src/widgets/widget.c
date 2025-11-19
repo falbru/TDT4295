@@ -79,7 +79,6 @@ void widget_handle_dirty(Widget *widget, Framebuffer *framebuffer)
     else
     {
         DirtyRect prev_geometry = (DirtyRect){widget->prev_x, widget->prev_y, widget->prev_width, widget->prev_height};
-
         framebuffer->dirty_rects[framebuffer->dirty_rect_count] = prev_geometry;
         framebuffer->dirty_rect_count++;
     }
