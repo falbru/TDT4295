@@ -31,6 +31,8 @@ add_custom_target(generate_fonts ALL
 
 add_library(game
     src/game.c
+    src/menu.c
+    src/game_page.c
 )
 
 add_dependencies(game generate_fonts)

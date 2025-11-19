@@ -43,10 +43,6 @@ void game_update(float delta_time);
 
 bool game_render(Framebuffer *framebuffer);
 
-bool game_needs_redraw(void);
-
-void game_request_redraw(void);
-
 bool game_handle_mouse_down(unsigned int x, unsigned int y);
 bool game_handle_mouse_up(unsigned int x, unsigned int y);
 bool game_handle_mouse_move(unsigned int x, unsigned int y);
@@ -69,5 +65,7 @@ void game_on_guess_click(Widget *widget, void *user_data);
 void game_on_clear_canvas_click(Widget *widget, void *user_data);
 void game_on_retry_click(Widget *widget, void *user_data);
 void game_on_play_click(Widget *widget, void *user_data);
+void game_on_menu_click(Widget *widget, void *user_data);
+void game_on_skip_click(Widget *widget, void *user_data);
 
 #endif

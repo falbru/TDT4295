@@ -177,18 +177,17 @@ void widget_handle_click(Widget *widget, int x, int y)
         {
             widget->on_click(widget, widget->user_data);
         }
-
-        if (widget->type == WIDGET_TYPE_CONTAINER)
+    }
+    if (widget->type == WIDGET_TYPE_CONTAINER)
+    {
+        ContainerData *data = (ContainerData *)widget->data;
+        if (data)
         {
-            ContainerData *data = (ContainerData *)widget->data;
-            if (data)
+            for (int i = 0; i < data->child_count; i++)
             {
-                for (int i = 0; i < data->child_count; i++)
+                if (data->children[i])
                 {
-                    if (data->children[i])
-                    {
-                        widget_handle_click(data->children[i], x, y);
-                    }
+                    widget_handle_click(data->children[i], x, y);
                 }
             }
         }

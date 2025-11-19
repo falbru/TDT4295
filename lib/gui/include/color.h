@@ -17,6 +17,9 @@ typedef struct {
 #define COLOR_GRAY_50 ((Color){0xFF, 0x80, 0x80, 0x80})
 #define COLOR_GRAY_75 ((Color){0xFF, 0xC0, 0xC0, 0xC0})
 
+#define COLOR_TRANSPARENT ((Color){0, 0, 0, 0})
+#define COLOR_YELLOW COLOR_RGB(255, 209, 57)
+
 // Helper macros for creating ARGB colors
 #define COLOR_ARGB(a, r, g, b) ((Color){a, r, g, b})
 #define COLOR_RGB(r, g, b) COLOR_ARGB(0xFF, r, g, b)
