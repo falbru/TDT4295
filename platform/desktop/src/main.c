@@ -4,7 +4,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -15,8 +14,8 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
-#define WINDOW_WIDTH 480
-#define WINDOW_HEIGHT 272
+#define WINDOW_WIDTH 272
+#define WINDOW_HEIGHT 480
 #define FRAMEBUFFER_SIZE (WINDOW_WIDTH * WINDOW_HEIGHT)
 
 static Framebuffer framebuffer;
@@ -61,8 +60,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     GameConfig config = {
         .drawing_prompts = DRAWING_PROMPTS,
         .num_prompts = NUM_PROMPTS,
-        .window_width = WINDOW_HEIGHT,
-        .window_height = WINDOW_WIDTH,
+        .window_width = WINDOW_WIDTH,
+        .window_height = WINDOW_HEIGHT,
         .canvas_width = 0,
         .canvas_height = 0,
         .guess_callback = on_guess_request,
@@ -95,26 +94,17 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
     if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN && event->button.button == SDL_BUTTON_LEFT)
     {
-        // Rotate mouse coordinates: swap X/Y and transform for 90-degree counter-clockwise rotation
-        int mouse_x = WINDOW_HEIGHT - (int)event->button.y;
-        int mouse_y = (int)event->button.x;
-        game_handle_mouse_down(mouse_x, mouse_y);
+        game_handle_mouse_down(event->button.x, event->button.y);
     }
 
     if (event->type == SDL_EVENT_MOUSE_BUTTON_UP && event->button.button == SDL_BUTTON_LEFT)
     {
-        // Rotate mouse coordinates: swap X/Y and transform for 90-degree counter-clockwise rotation
-        int mouse_x = WINDOW_HEIGHT - (int)event->button.y;
-        int mouse_y = (int)event->button.x;
-        game_handle_mouse_up(mouse_x, mouse_y);
+        game_handle_mouse_up(event->button.x, event->button.y);
     }
 
     if (event->type == SDL_EVENT_MOUSE_MOTION)
     {
-        // Rotate mouse coordinates: swap X/Y and transform for 90-degree counter-clockwise rotation
-        int mouse_x = WINDOW_HEIGHT - (int)event->motion.y;
-        int mouse_y = (int)event->motion.x;
-        game_handle_mouse_move(mouse_x, mouse_y);
+        game_handle_mouse_move(event->button.x, event->button.y);
     }
 
     return SDL_APP_CONTINUE;

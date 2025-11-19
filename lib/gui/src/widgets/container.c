@@ -193,6 +193,7 @@ void container_clear_children(Widget *container)
 
     data->child_count = 0;
     container_update_layout(container);
+    widget_mark_dirty(container);
 }
 
 void container_set_spacing(Widget *container, int spacing)
@@ -206,6 +207,7 @@ void container_set_spacing(Widget *container, int spacing)
 
     data->spacing = spacing;
     container_update_layout(container);
+    widget_mark_dirty(container);
 }
 
 void container_set_padding(Widget *container, int padding)
@@ -219,6 +221,7 @@ void container_set_padding(Widget *container, int padding)
 
     data->padding = padding;
     container_update_layout(container);
+    widget_mark_dirty(container);
 }
 
 void container_set_alignment(Widget *container, Alignment alignment)
@@ -232,6 +235,7 @@ void container_set_alignment(Widget *container, Alignment alignment)
 
     data->alignment = alignment;
     container_update_layout(container);
+    widget_mark_dirty(container);
 }
 
 void container_set_justify(Widget *container, Alignment justify)
@@ -245,6 +249,7 @@ void container_set_justify(Widget *container, Alignment justify)
 
     data->justify = justify;
     container_update_layout(container);
+    widget_mark_dirty(container);
 }
 
 void container_set_grid_columns(Widget *container, int columns)
@@ -509,7 +514,12 @@ static void update_grid_layout(Widget *container)
         int child_width = cell_width;
         int child_height = cell_height;
 
-        if (data->alignment == ALIGN_CENTER)
+        if (data->alignment == ALIGN_STRETCH)
+        {
+            child_width = cell_width;
+            child_height = cell_height;
+        }
+        else if (data->alignment == ALIGN_CENTER)
         {
             if (child->width > 0 && child->width < cell_width)
             {
@@ -522,7 +532,7 @@ static void update_grid_layout(Widget *container)
                 child_height = child->height;
             }
         }
-        else if (data->alignment != ALIGN_STRETCH)
+        else
         {
             if (child->width > 0)
                 child_width = child->width;
@@ -580,6 +590,7 @@ void container_set_animation(Widget *container, AnimationType animation)
 
     data->animation = animation;
     container_update_layout(container);
+    widget_mark_dirty(container);
 }
 
 void container_set_animation_speed(Widget *container, int speed)
@@ -606,13 +617,10 @@ void container_update_animation(Widget *container, float delta_time)
     if (data->animation == ANIMATION_NONE)
         return;
 
-    // Update the animation phase based on delta_time
-    // animation_speed is degrees per second, delta_time is in seconds
     float phase_increment = data->animation_speed * delta_time;
     data->animation_phase += phase_increment;
     if (data->animation_phase >= 360.0f)
         data->animation_phase -= 360.0f;
 
-    // Trigger layout update to apply animation
     container_update_layout(container);
 }

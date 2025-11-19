@@ -4,29 +4,45 @@
 #include <stdint.h>
 
 typedef struct {
-    uint8_t a;  // Alpha
-    uint8_t r;  // Red
-    uint8_t g;  // Green
-    uint8_t b;  // Blue
+    uint8_t a;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
 } Color;
 
-// Predefined ARGB colors
 #define COLOR_BLACK   ((Color){0xFF, 0x00, 0x00, 0x00})
 #define COLOR_WHITE   ((Color){0xFF, 0xFF, 0xFF, 0xFF})
 #define COLOR_GRAY_25 ((Color){0xFF, 0x40, 0x40, 0x40})
 #define COLOR_GRAY_50 ((Color){0xFF, 0x80, 0x80, 0x80})
 #define COLOR_GRAY_75 ((Color){0xFF, 0xC0, 0xC0, 0xC0})
 
-#define COLOR_TRANSPARENT ((Color){0, 0, 0, 0})
-#define COLOR_YELLOW COLOR_RGB(255, 209, 57)
+#define COLOR_RED     ((Color){0xFF, 0xFF, 0x00, 0x00})
+#define COLOR_GREEN   ((Color){0xFF, 0x00, 0xFF, 0x00})
+#define COLOR_BLUE    ((Color){0xFF, 0x00, 0x00, 0xFF})
+#define COLOR_CYAN    ((Color){0xFF, 0x00, 0xFF, 0xFF})
+#define COLOR_MAGENTA ((Color){0xFF, 0xFF, 0x00, 0xFF})
+#define COLOR_YELLOW  ((Color){0xFF, 0xFF, 0xD1, 0x39})
+#define COLOR_ORANGE  ((Color){0xFF, 0xFF, 0xA5, 0x00})
+#define COLOR_PURPLE  ((Color){0xFF, 0x80, 0x00, 0x80})
+#define COLOR_PINK    ((Color){0xFF, 0xFF, 0xC0, 0xCB})
+#define COLOR_BROWN   ((Color){0xFF, 0xA5, 0x2A, 0x2A})
+#define COLOR_NAVY    ((Color){0xFF, 0x00, 0x00, 0x80})
+#define COLOR_TEAL    ((Color){0xFF, 0x00, 0x80, 0x80})
+#define COLOR_LIME    ((Color){0xFF, 0x00, 0xFF, 0x00})
+#define COLOR_INDIGO  ((Color){0xFF, 0x4B, 0x00, 0x82})
+#define COLOR_VIOLET  ((Color){0xFF, 0xEE, 0x82, 0xEE})
+#define COLOR_GOLD    ((Color){0xFF, 0xFF, 0xD7, 0x00})
+#define COLOR_SILVER  ((Color){0xFF, 0xC0, 0xC0, 0xC0})
+#define COLOR_MAROON  ((Color){0xFF, 0x80, 0x00, 0x00})
+#define COLOR_OLIVE   ((Color){0xFF, 0x80, 0x80, 0x00})
 
-// Helper macros for creating ARGB colors
+#define COLOR_TRANSPARENT ((Color){0, 0, 0, 0})
+
 #define COLOR_ARGB(a, r, g, b) ((Color){a, r, g, b})
 #define COLOR_RGB(r, g, b) COLOR_ARGB(0xFF, r, g, b)
 
 #define COLOR_COMPARE(c1, c2) (c1.a == c2.a && c1.r == c2.r && c1.g == c2.g && c1.b == c2.b)
 
-// Extract components from ARGB color
 #define COLOR_GET_A(color) ((color).a)
 #define COLOR_GET_R(color) ((color).r)
 #define COLOR_GET_G(color) ((color).g)

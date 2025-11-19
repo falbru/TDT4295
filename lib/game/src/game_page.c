@@ -280,6 +280,9 @@ void game_page_start_new_round(void)
 
 int game_page_send_guess(int guess_index)
 {
+    if (guess_index < 0 || guess_index >= (int)g_game_page.num_prompts)
+        return 0;
+
     const char *guess = g_game_page.drawing_prompts[guess_index];
     bool correct = (guess_index == (int)g_game_page.current_prompt_index);
 

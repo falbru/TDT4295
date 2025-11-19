@@ -18,7 +18,7 @@ git clone https://github.com/falbru/TDT4295
 cd TDT4295
 ```
 
-2. Initialize submodules
+2. Initialize submodules (for Unity testing framework)
 
 ```sh
 git submodule update --init

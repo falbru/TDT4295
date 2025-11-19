@@ -7,7 +7,6 @@
 #include "widgets/container.h"
 #include "widgets/widget.h"
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
