@@ -270,7 +270,8 @@ void game_on_play_click(Widget *widget, void *user_data)
     widget_set_visible(g_game.menu_container, false);
     widget_set_visible(g_game.game_container, true);
 
-    // Start a new round
+    // Reset score and start a new round
+    game_page_reset_score();
     game_start_new_round();
 }
 

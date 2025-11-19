@@ -41,6 +41,7 @@ static struct
     Widget *game_container;
     Widget *button_container;
     Widget *action_button_container;
+    Widget *label_round;
     Widget *label_prompt;
     Widget *label_result;
     Widget *button_retry;
@@ -81,6 +82,15 @@ Widget *game_page_init(const GameConfig *config)
     container_set_spacing(g_game_page.game_container, SPACING_XL);
     container_set_alignment(g_game_page.game_container, ALIGN_CENTER);
     widget_set_visible(g_game_page.game_container, false);
+
+    g_game_page.label_round = label_create_auto(0, 0, "Round 0", &font_small_font);
+    if (!g_game_page.label_round)
+    {
+        game_page_cleanup();
+        return NULL;
+    }
+    label_set_color(g_game_page.label_round, COLOR_GRAY_50);
+    container_add_child(g_game_page.game_container, g_game_page.label_round);
 
     g_game_page.label_prompt = label_create_auto(0, 0, "Draw: ", label_font);
     if (!g_game_page.label_prompt)
@@ -176,18 +186,68 @@ Widget *game_page_init(const GameConfig *config)
     return g_game_page.game_container;
 }
 
+static void uint_to_str(unsigned int num, char *str, size_t size)
+{
+    if (size == 0) return;
+
+    char temp[16];
+    int i = 0;
+
+    if (num == 0)
+    {
+        temp[i++] = '0';
+    }
+    else
+    {
+        while (num > 0 && i < 15)
+        {
+            temp[i++] = '0' + (num % 10);
+            num /= 10;
+        }
+    }
+
+    int j = 0;
+    while (i > 0 && j < (int)size - 1)
+    {
+        str[j++] = temp[--i];
+    }
+    str[j] = '\0';
+}
+
+static void update_round_label(void)
+{
+    char round_text[32];
+    round_text[0] = '\0';
+    str_concat(round_text, sizeof(round_text), "Round ");
+
+    char score_str[16];
+    uint_to_str(g_game_page.score, score_str, sizeof(score_str));
+    str_concat(round_text, sizeof(round_text), score_str);
+
+    label_set_text(g_game_page.label_round, round_text);
+    label_auto_size(g_game_page.label_round);
+    container_update_layout(g_game_page.game_container);
+}
+
 void game_page_cleanup(void)
 {
     // Widgets are cleaned up by parent container, just clear references
     g_game_page.game_container = NULL;
     g_game_page.button_container = NULL;
     g_game_page.action_button_container = NULL;
+    g_game_page.label_round = NULL;
     g_game_page.label_prompt = NULL;
     g_game_page.label_result = NULL;
     g_game_page.button_retry = NULL;
     g_game_page.button_menu = NULL;
     g_game_page.button_skip = NULL;
     g_game_page.canvas = NULL;
+}
+
+void game_page_reset_score(void)
+{
+    g_game_page.score = 0;
+    update_round_label();
 }
 
 void game_page_start_new_round(void)
@@ -230,6 +290,7 @@ int game_page_send_guess(int guess_index)
     if (correct)
     {
         g_game_page.score++;
+        update_round_label();
         widget_set_visible(g_game_page.button_retry, true);
         widget_set_visible(g_game_page.button_skip, false);
         return true;
