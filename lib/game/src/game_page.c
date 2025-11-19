@@ -18,6 +18,16 @@
 #define SPACING_LG 8
 #define SPACING_XL 16
 
+#define LABEL_ROUND_COLOR COLOR_GRAY_50
+#define LABEL_TEXT_COLOR COLOR_BLACK
+#define CANVAS_COLOR COLOR_BLACK
+#define BUTTON_MENU_BG COLOR_YELLOW
+#define BUTTON_MENU_TEXT COLOR_BLACK
+#define BUTTON_MENU_BORDER COLOR_GRAY_25
+#define BUTTON_RETRY_BG COLOR_RGB(46, 170, 80)
+#define BUTTON_RETRY_TEXT COLOR_WHITE
+#define BUTTON_RETRY_BORDER COLOR_RGB(35, 118, 54)
+
 static void str_concat(char *dest, size_t dest_size, const char *src)
 {
     size_t dest_len = strlen(dest);
@@ -36,7 +46,7 @@ static struct
     const char **drawing_prompts;
     unsigned int num_prompts;
     unsigned int current_prompt_index;
-    unsigned int score;
+    unsigned int round;
 
     Widget *game_container;
     Widget *button_container;
@@ -62,7 +72,7 @@ Widget *game_page_init(const GameConfig *config)
     g_game_page.drawing_prompts = config->drawing_prompts;
     g_game_page.num_prompts = config->num_prompts;
     g_game_page.current_prompt_index = 0;
-    g_game_page.score = 0;
+    g_game_page.round = 0;
 
     const bdf_font_t *label_font = config->label_font ? config->label_font : &font_medium_font;
     const bdf_font_t *button_font = config->button_font ? config->button_font : &font_medium_font;
@@ -71,7 +81,6 @@ Widget *game_page_init(const GameConfig *config)
     unsigned int canvas_width = config->canvas_width > 0 ? config->canvas_width : DEFAULT_CANVAS_WIDTH;
     unsigned int canvas_height = config->canvas_height > 0 ? config->canvas_height : DEFAULT_CANVAS_HEIGHT;
 
-    // Create game container
     g_game_page.game_container = vbox_create(0, 0, config->window_width, config->window_height);
     if (!g_game_page.game_container)
     {
@@ -89,7 +98,7 @@ Widget *game_page_init(const GameConfig *config)
         game_page_cleanup();
         return NULL;
     }
-    label_set_color(g_game_page.label_round, COLOR_GRAY_50);
+    label_set_color(g_game_page.label_round, LABEL_ROUND_COLOR);
     container_add_child(g_game_page.game_container, g_game_page.label_round);
 
     g_game_page.label_prompt = label_create_auto(0, 0, "Draw: ", label_font);
@@ -98,7 +107,7 @@ Widget *game_page_init(const GameConfig *config)
         game_page_cleanup();
         return NULL;
     }
-    label_set_color(g_game_page.label_prompt, COLOR_BLACK);
+    label_set_color(g_game_page.label_prompt, LABEL_TEXT_COLOR);
     container_add_child(g_game_page.game_container, g_game_page.label_prompt);
 
     g_game_page.canvas = canvas_create(0, 0, canvas_width, canvas_height);
@@ -108,9 +117,9 @@ Widget *game_page_init(const GameConfig *config)
         return NULL;
     }
     canvas_set_brush_size(g_game_page.canvas, 7);
-    canvas_set_brush_color(g_game_page.canvas, COLOR_BLACK);
-    canvas_set_background_color(g_game_page.canvas, COLOR_BLACK);
-    canvas_set_border(g_game_page.canvas, COLOR_BLACK, 1);
+    canvas_set_brush_color(g_game_page.canvas, CANVAS_COLOR);
+    canvas_set_background_color(g_game_page.canvas, CANVAS_COLOR);
+    canvas_set_border(g_game_page.canvas, CANVAS_COLOR, 1);
     container_add_child(g_game_page.game_container, g_game_page.canvas);
 
     g_game_page.button_container = hbox_create(0, 0, config->window_width, 40);
@@ -128,10 +137,9 @@ Widget *game_page_init(const GameConfig *config)
         game_page_cleanup();
         return NULL;
     }
-    label_set_color(g_game_page.label_result, COLOR_BLACK);
+    label_set_color(g_game_page.label_result, LABEL_TEXT_COLOR);
     container_add_child(g_game_page.game_container, g_game_page.label_result);
 
-    // Create action button container for menu and skip buttons
     g_game_page.action_button_container = hbox_create(0, 0, config->window_width, 40);
     if (!g_game_page.action_button_container)
     {
@@ -147,10 +155,10 @@ Widget *game_page_init(const GameConfig *config)
         game_page_cleanup();
         return NULL;
     }
-    button_set_background_color(g_game_page.button_menu, COLOR_YELLOW);
-    button_set_text_color(g_game_page.button_menu, COLOR_BLACK);
-    button_set_border(g_game_page.button_menu, COLOR_GRAY_25, 2);
-    button_set_on_click(g_game_page.button_menu, game_on_menu_click, NULL);
+    button_set_background_color(g_game_page.button_menu, BUTTON_MENU_BG);
+    button_set_text_color(g_game_page.button_menu, BUTTON_MENU_TEXT);
+    button_set_border(g_game_page.button_menu, BUTTON_MENU_BORDER, 2);
+    button_set_on_click(g_game_page.button_menu, game_on_menu, NULL);
     widget_set_visible(g_game_page.button_menu, true);
     container_add_child(g_game_page.action_button_container, g_game_page.button_menu);
 
@@ -160,10 +168,10 @@ Widget *game_page_init(const GameConfig *config)
         game_page_cleanup();
         return NULL;
     }
-    button_set_background_color(g_game_page.button_skip, COLOR_YELLOW);
-    button_set_text_color(g_game_page.button_skip, COLOR_BLACK);
-    button_set_border(g_game_page.button_skip, COLOR_GRAY_25, 2);
-    button_set_on_click(g_game_page.button_skip, game_on_skip_click, NULL);
+    button_set_background_color(g_game_page.button_skip, BUTTON_MENU_BG);
+    button_set_text_color(g_game_page.button_skip, BUTTON_MENU_TEXT);
+    button_set_border(g_game_page.button_skip, BUTTON_MENU_BORDER, 2);
+    button_set_on_click(g_game_page.button_skip, game_on_skip, NULL);
     widget_set_visible(g_game_page.button_skip, true);
     container_add_child(g_game_page.action_button_container, g_game_page.button_skip);
 
@@ -173,10 +181,10 @@ Widget *game_page_init(const GameConfig *config)
         game_page_cleanup();
         return NULL;
     }
-    button_set_background_color(g_game_page.button_retry, COLOR_RGB(46, 170, 80));
-    button_set_text_color(g_game_page.button_retry, COLOR_WHITE);
-    button_set_border(g_game_page.button_retry, COLOR_RGB(35, 118, 54), 2);
-    button_set_on_click(g_game_page.button_retry, game_on_retry_click, NULL);
+    button_set_background_color(g_game_page.button_retry, BUTTON_RETRY_BG);
+    button_set_text_color(g_game_page.button_retry, BUTTON_RETRY_TEXT);
+    button_set_border(g_game_page.button_retry, BUTTON_RETRY_BORDER, 2);
+    button_set_on_click(g_game_page.button_retry, game_on_retry, NULL);
     widget_set_visible(g_game_page.button_retry, false);
     container_add_child(g_game_page.action_button_container, g_game_page.button_retry);
 
@@ -220,9 +228,9 @@ static void update_round_label(void)
     round_text[0] = '\0';
     str_concat(round_text, sizeof(round_text), "Round ");
 
-    char score_str[16];
-    uint_to_str(g_game_page.score, score_str, sizeof(score_str));
-    str_concat(round_text, sizeof(round_text), score_str);
+    char round_str[16];
+    uint_to_str(g_game_page.round, round_str, sizeof(round_str));
+    str_concat(round_text, sizeof(round_text), round_str);
 
     label_set_text(g_game_page.label_round, round_text);
     label_auto_size(g_game_page.label_round);
@@ -231,7 +239,6 @@ static void update_round_label(void)
 
 void game_page_cleanup(void)
 {
-    // Widgets are cleaned up by parent container, just clear references
     g_game_page.game_container = NULL;
     g_game_page.button_container = NULL;
     g_game_page.action_button_container = NULL;
@@ -244,9 +251,9 @@ void game_page_cleanup(void)
     g_game_page.canvas = NULL;
 }
 
-void game_page_reset_score(void)
+void game_page_reset_round(void)
 {
-    g_game_page.score = 0;
+    g_game_page.round = 0;
     update_round_label();
 }
 
@@ -289,7 +296,7 @@ int game_page_send_guess(int guess_index)
 
     if (correct)
     {
-        g_game_page.score++;
+        g_game_page.round++;
         update_round_label();
         widget_set_visible(g_game_page.button_retry, true);
         widget_set_visible(g_game_page.button_skip, false);

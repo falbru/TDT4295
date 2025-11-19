@@ -90,7 +90,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
 
     if (event->type == SDL_EVENT_KEY_UP) {
-        game_on_retry_click(NULL, NULL);
+        game_on_retry(NULL, NULL);
     }
 
     if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN && event->button.button == SDL_BUTTON_LEFT)

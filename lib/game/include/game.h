@@ -37,8 +37,6 @@ void game_cleanup(void);
 
 void game_start_new_round(void);
 
-void game_set_prompt(int index);
-
 void game_update(float delta_time);
 
 bool game_render(Framebuffer *framebuffer);
@@ -51,21 +49,16 @@ void game_get_canvas_28x28(uint8_t *output_buffer);
 
 void game_send_guess(int guess_index);
 
-int game_get_current_prompt_index(void);
-
 int game_get_state(void);
 
 bool game_is_initialized(void);
 
 void game_set_random_seed(unsigned int seed);
 
-unsigned int game_get_score(void);
-
-void game_on_guess_click(Widget *widget, void *user_data);
-void game_on_clear_canvas_click(Widget *widget, void *user_data);
-void game_on_retry_click(Widget *widget, void *user_data);
-void game_on_play_click(Widget *widget, void *user_data);
-void game_on_menu_click(Widget *widget, void *user_data);
-void game_on_skip_click(Widget *widget, void *user_data);
+void game_on_guess(Widget *widget, void *user_data);
+void game_on_retry(Widget *widget, void *user_data);
+void game_on_play(Widget *widget, void *user_data);
+void game_on_menu(Widget *widget, void *user_data);
+void game_on_skip(Widget *widget, void *user_data);
 
 #endif
